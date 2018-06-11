@@ -1,0 +1,40 @@
+package vicon_bridge;
+
+public interface TfDistortInfo extends org.ros.internal.message.Message {
+  static final java.lang.String _TYPE = "vicon_bridge/TfDistortInfo";
+  static final java.lang.String _DEFINITION = "float64 tf_pub_rate\nstring tf_ref_frame\nstring tf_frame_in\nstring tf_frame_out\nint32 delay\nfloat64 position_scale\nstring noise_type\nfloat64 sigma_roll_pitch\nfloat64 sigma_yaw\nfloat64 sigma_xy\nfloat64 sigma_z\nfloat64 random_walk_k_xy\nfloat64 random_walk_k_z\nfloat64 random_walk_sigma_xy\nfloat64 random_walk_sigma_z\nfloat64 random_walk_tau_xy\nfloat64 random_walk_tau_z";
+  double getTfPubRate();
+  void setTfPubRate(double value);
+  java.lang.String getTfRefFrame();
+  void setTfRefFrame(java.lang.String value);
+  java.lang.String getTfFrameIn();
+  void setTfFrameIn(java.lang.String value);
+  java.lang.String getTfFrameOut();
+  void setTfFrameOut(java.lang.String value);
+  int getDelay();
+  void setDelay(int value);
+  double getPositionScale();
+  void setPositionScale(double value);
+  java.lang.String getNoiseType();
+  void setNoiseType(java.lang.String value);
+  double getSigmaRollPitch();
+  void setSigmaRollPitch(double value);
+  double getSigmaYaw();
+  void setSigmaYaw(double value);
+  double getSigmaXy();
+  void setSigmaXy(double value);
+  double getSigmaZ();
+  void setSigmaZ(double value);
+  double getRandomWalkKXy();
+  void setRandomWalkKXy(double value);
+  double getRandomWalkKZ();
+  void setRandomWalkKZ(double value);
+  double getRandomWalkSigmaXy();
+  void setRandomWalkSigmaXy(double value);
+  double getRandomWalkSigmaZ();
+  void setRandomWalkSigmaZ(double value);
+  double getRandomWalkTauXy();
+  void setRandomWalkTauXy(double value);
+  double getRandomWalkTauZ();
+  void setRandomWalkTauZ(double value);
+}
