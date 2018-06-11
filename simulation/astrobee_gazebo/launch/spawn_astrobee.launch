@@ -27,6 +27,8 @@
        name="gpose" value="2 0 4.8 0 0 0 1"/>
   <arg if="$(eval arg('pose')=='' and arg('world')=='mgtf')"
        name="gpose" value="0 0 0 0 0 0 1"/>
+  <arg if="$(eval arg('pose')=='' and arg('world')=='aerolab')"
+       name="gpose" value="2 0 4.8 0 0 0 1"/>
   <!-- Use the namespace forward-slash to signify that this model has no name -->
   <node if="$(eval arg('ns')=='')"
         name="spawn_astrobee" pkg="astrobee_gazebo" type="spawn_model"

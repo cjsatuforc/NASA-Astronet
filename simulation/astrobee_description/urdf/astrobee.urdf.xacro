@@ -79,4 +79,13 @@
                         rpy="0.0 3.1415 0.0" />
   </xacro:if>
 
+
+  <!-- AEROLAB -->
+
+  <xacro:if value="${ace == 'aerolab'}">
+    <xacro:perching_arm bay="top_aft" 
+                        xyz="-0.01 0.0 -0.065" 
+                        rpy="0.0 3.1415 0.0" />
+  </xacro:if>
+
 </robot>
