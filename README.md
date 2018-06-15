@@ -1,6 +1,8 @@
-# Astrobee Robot Software - Flight Software repository
+# The AstroNet: A Human-Centric Network of Free-Flying Space Co-Robots
+The [AstroNet](https://www.nasa.gov/directorates/spacetech/strg/ecf2016/AstroNet.html) Simulator is developed as an extension to NASA's Astrobee simulator, where control schemes, task allocation paradigms and navigation algorithms for each of the Astrobee Robots are developed. ROS Kinetic is used for simulating the algorithms, and to interface with the quadcopters (representing astrobee robots in our environment). An interactive VR-based environment of the whole International Space Station, with the robots in it, has been implemented and can be visualized on the [Oculus Rift](https://www.oculus.com/rift/).
 
-## About
+
+## Astrobee Robot Software - Flight Software repository
 
 <p>
 <img src="doc/images/astrobee.png" srcset="../images/astrobee.png 1x" title="Astrobee" align="right" style="display: inline"/>
@@ -30,21 +32,21 @@ The Astrobee Robot Software is in a beta stage. This means that some
 features are incomplete, and extensive changes can be expected. Please consult
 [RELEASE](RELEASE.md) for the current list of features and limitations.
 
-## Usage instructions
+### Usage instructions
 
 If you don't have access to NASA's internal network, please see the
 [usage instructions](INSTALL.md).
 
 If you do, please see the [NASA usage instructions](NASA_INSTALL.md).
 
-## Contributors
+### Contributors
 
 The Astrobee Robot Software is open source, and we welcome contributions
 from the public. However, for us to merge any pull requests, we must request
 that contributors sign and submit a [Contributor License Agreement](https://www.nasa.gov/sites/default/files/atoms/files/astrobee_individual_contributor_license_agreement.pdf)
 due to NASA legal requirements. Thank you for your understanding.
 
-## Documentation
+### Documentation
 To generate the Astrobee documentation, run
 
     doxygen freeflyer.doxyfile
@@ -52,7 +54,7 @@ To generate the Astrobee documentation, run
 after checking out the code. The documentation will be generated in the doc/html
 folder. Open the index.html to get to the main page of the documentation.
 
-## Guest Science
+### Guest Science
 
 If you are interested in guest science, please do one of the following for more
 information.
@@ -66,7 +68,7 @@ located in the `astrobee_android/guest_science folder`.
 If you are a NASA user, please make sure the `android` submodule was checked out
 and then visit `submodules/android/guest_science/readme.md`.
 
-## License
+### License
 
 Copyright (c) 2017, United States Government, as represented by the
 Administrator of the National Aeronautics and Space Administration.
