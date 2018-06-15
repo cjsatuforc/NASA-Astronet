@@ -1,0 +1,6 @@
+<launch>
+	<!-- Launch the state readers and publishers -->
+	<node pkg="aerolab" type="hbirdbState" name="hbirdbState" respawn="true" />
+	<node pkg="aerolab" type="hbirddgState" name="hbirddgState" respawn="true" />
+
+</launch>

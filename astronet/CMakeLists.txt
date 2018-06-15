@@ -14,7 +14,8 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 # add_executable(command nodes/test/command.cpp)
 
 # Make Useful Nodes
-add_executable(publisher nodes/publisher.cpp)
+add_executable(hbirdbPub nodes/hbirdbPub.cpp)
+add_executable(hbirddgPub nodes/hbirddgPub.cpp)
 add_executable(hbirdbState nodes/hbirdbState.cpp)
 add_executable(hbirddgState nodes/hbirddgState.cpp)
 
@@ -24,6 +25,7 @@ add_executable(hbirddgState nodes/hbirddgState.cpp)
 # add target link libraries for each executable you make
 # target_link_libraries(publish ${catkin_LIBRARIES})
 # target_link_libraries(command ${catkin_LIBRARIES})
-target_link_libraries(publisher ${catkin_LIBRARIES})
+target_link_libraries(hbirdbPub ${catkin_LIBRARIES})
+target_link_libraries(hbirddgPub ${catkin_LIBRARIES})
 target_link_libraries(hbirdbState ${catkin_LIBRARIES})
 target_link_libraries(hbirddgState ${catkin_LIBRARIES})

@@ -1,7 +1,6 @@
 #include <ros/ros.h>
-#include <gazebo_msgs/ModelStates.h>
-#include <gazebo_msgs/SetModelState.h>
 #include <gazebo_msgs/GetModelState.h>
+#include <geometry_msgs/Transform.h>
 
 using namespace ros;
 
@@ -12,11 +11,11 @@ int main(int argc, char **argv) {
 	init(argc, argv, "hbirddgState");
 	NodeHandle nh;
 
-	pub = nh.advertise<gazebo_msgs::ModelState>("gazebo/set_model_state", 10000);
 	client = nh.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state");
+	pub = nh.advertise<geometry_msgs::Transform>("hbirddgState", 10000);
 
 	// publish model states
-	gazebo_msgs::ModelState hbirddg;
+	geometry_msgs::Transform hbirddg;
 
 	// call services and get model states
 	gazebo_msgs::GetModelState model1;
@@ -26,14 +25,13 @@ int main(int argc, char **argv) {
 
 	while(ok()){
 		if(client.call(model1)){
-			hbirddg.model_name = "/hbirddg";
-			hbirddg.pose.position.x = model1.response.pose.position.x;
-			hbirddg.pose.position.y = model1.response.pose.position.y;
-			hbirddg.pose.position.z = model1.response.pose.position.z;
-			hbirddg.pose.orientation.x = model1.response.pose.orientation.x;
-			hbirddg.pose.orientation.y = model1.response.pose.orientation.y;
-			hbirddg.pose.orientation.z = model1.response.pose.orientation.z;
-			hbirddg.pose.orientation.w = model1.response.pose.orientation.w;
+			hbirddg.translation.x = model1.response.pose.position.x;
+			hbirddg.translation.y = model1.response.pose.position.y;
+			hbirddg.translation.z = model1.response.pose.position.z;
+			hbirddg.rotation.x = model1.response.pose.orientation.x;
+			hbirddg.rotation.y = model1.response.pose.orientation.y;
+			hbirddg.rotation.z = model1.response.pose.orientation.z;
+			hbirddg.rotation.w = model1.response.pose.orientation.w;
 			pub.publish(hbirddg);
 		}
 		else{

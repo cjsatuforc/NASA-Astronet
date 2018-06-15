@@ -1,0 +1,5 @@
+<launch>
+	<!-- Launch just the publisher for hbirdb -->
+	<node pkg="aerolab" type="hbirdbState" name="hbirdbState" respawn="true" />
+	<node pkg="aerolab" type="hbirdbPub" name="hbirdbPub" respawn="true" />
+</launch>

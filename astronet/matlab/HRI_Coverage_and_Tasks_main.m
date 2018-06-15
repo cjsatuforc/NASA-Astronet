@@ -1,3 +1,20 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Head - 
+% min - (-0.095, -0.972, 0)
+% max - (0.55, 0.19, 1.865)
+% avg - (0.095, -0.174, 1.843)
+% 
+% Left Arm - 
+% min - (-0.365, -1.036, 0)
+% max - (0.785, 0.284, 2.135)
+% avg - (0.275, -0.275, 1.713)
+% 
+% Right Arm -
+% min - (-0.546, -0.79, 0)
+% max - (0.75, 0.4, 2.134)
+% avg - (-0.06, -0.22, 1.46)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 rosshutdown, clear, clc;
 close all
 tic
@@ -47,55 +64,9 @@ for i=1:quad_num
     pause(1);
 end
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%------------------- ROS parameters - William ------------------------%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%{
-setenv('ROS_MASTER_URI','http://dasc:11311/');
-rosinit('NodeName','/Matlab');
-
-quad_list = {'/vicon/hbirddg/hbirddg' '/vicon/hbirdb/hbirdb' '/vicon/William/William' '/vicon/Left_Arm/Left_Arm' '/vicon/Right_Arm/Right_Arm'};
-viconCallback_list = {@viconCallback_quad_1 @viconCallback_quad_2 @viconCallback_William @viconCallback_Left_Arm @viconCallback_Right_Arm};
-statusCallback_list = {@statusCallback_1 @statusCallback_2 @statusCallback_3 @statusCallback_4 @statusCallback_5};
-
-% figure('units','normalized','outerposition',[0 0 1 1])
-
-% Number of quadrotors
-quad_num=2; 
-tic
-
-% SUBSCRIBE TO VICON MESSAGES AND PUBLISH THE CONTROL MESSAGES FOR THE QUADS
-for i=1:quad_num
-    vicon_sub(i) = rossubscriber(quad_list{i},'geometry_msgs/TransformStamped',viconCallback_list{i});
-    pause(1);
-
-    mav_state_sub(i) = rossubscriber(strcat(strcat('/quad',num2str(i)),'/fcu/status'),'asctec_hl_comm/mav_status',statusCallback_list{i});
-    pause(1)
-    
-    ctrl_pub(i) = rospublisher(sprintf('/cov_ctrl_%d',i),'asctec_hl_comm/mav_ctrl');
-    ctrl_msg(i) = rosmessage(ctrl_pub(i));
-    pause(1);
-end
-
-% subscribe to the head position published by Vicon
-vicon_sub(quad_num+1)= rossubscriber(quad_list{quad_num+1},'geometry_msgs/TransformStamped',viconCallback_list{quad_num+1}); 
-pause(1);
-% subscribe to the left arm position published by Vicon
-vicon_sub(quad_num+2)= rossubscriber(quad_list{quad_num+2},'geometry_msgs/TransformStamped',viconCallback_list{quad_num+2});
-pause(1);
-% subscribe to the right arm position published by Vicon
-vicon_sub(quad_num+3)= rossubscriber(quad_list{quad_num+3},'geometry_msgs/TransformStamped',viconCallback_list{quad_num+3});
-pause(1);
-
-% Define loop rate
-rate = rosrate(60);
-%}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %---------------------- SETUP HRI PARAMETERS -------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %Set Up HRI Parameters
 
@@ -126,44 +97,77 @@ gamma=0.55; %discount factor
 %Set up Environment, from 1 up to 100 units.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%----------------------- LAB ENVIRONMENT DIMS ------------------------%
+%-------------------- SIM ENVIRONMENT PARAMETERS ---------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-x_max = 50;
-y_max = 50;
-z_max = 50;
+x_min = -10; x_max = 52;
+y_min = -8; y_max = 8;
+z_min = 40; z_max = 57;
 
-x_orig=-1.2;
-y_orig=-2.6;
+% Set origin for the simulator
+% to be subtracted from simulator data
+x_orig = (x_min)/10;
+y_orig = (y_min)/10;
+z_orig = (z_min)/10;
 
-[x_mesh,y_mesh]=meshgrid(1:x_max,1:y_max);
+% Set origin for the actual physical workspace
+% to be subtracted from vicon data
+x_orig_ws = -1.2;
+y_orig_ws = -2.6;
+z_orig_ws = 0;
 
+% arm height threshold
+arm_thresh = 1.5;
+
+% defining velocity scale
+scale = 0.2;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%----------------------- SIM ENVIRONMENT DIMS ------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[x_mesh,y_mesh] = meshgrid(1:x_max-x_min+1,1:y_max-y_min+1);
 t=1;
 
 %Place goals at random locations
-goal(1,1)=(1.2457-x_orig)*10;
-goal(1,2)=(-2.4217-y_orig)*10;
+goal(1,1)=((x_max - x_min)*rand() + 1)*10;
+goal(1,2)=((y_max - y_min)*rand() + 1)*10;
 
-goal(2,1)=(1.2269-x_orig)*10;
-goal(2,2)=(-0.6072-y_orig)*10;
+goal(2,1)=((x_max - x_min)*rand() + 1)*10;
+goal(2,2)=((y_max - y_min)*rand() + 1)*10;
 
-goal(3,1)=(0.8477-x_orig)*10;
-goal(3,2)=(1.7150-y_orig)*10;
 
-goal(4,1)=(0.2662-x_orig)*10;
-goal(4,2)=(1.3679-y_orig)*10;
+goal(2,1)=((x_max - x_min)*rand() + 1)*10;
+goal(2,2)=((y_max - y_min)*rand() + 1)*10;
 
-goal(5,1)=(-0.3188-x_orig)*10;
-goal(5,2)=(1.6087-y_orig)*10;
+goal(3,1)=((x_max - x_min)*rand() + 1)*10;
+goal(3,2)=((y_max - y_min)*rand() + 1)*10;
+
+goal(4,1)=((x_max - x_min)*rand() + 1)*10;
+goal(4,2)=((y_max - y_min)*rand() + 1)*10;
+
+goal(5,1)=((x_max - x_min)*rand() + 1)*10;
+goal(5,2)=((y_max - y_min)*rand() + 1)*10;
 
 %Human Starting Location
-Human(t,1)=(x_head-x_orig)*10;
-Human(t,2)=(y_head-y_orig)*10;
+Human(t,1)=(x_head-x_orig_ws)*10;
+Human(t,2)=(y_head-y_orig_ws)*10;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%----------------------- NORMALIZE POSITIONS -------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+x_1 = x_1 - x_orig;
+y_1 = y_1 - y_orig;
+z_1 = z_1 - z_orig;
+x_2 = x_2 - x_orig;
+y_2 = y_2 - y_orig;
+z_2 = z_2 - z_orig;
 
 %Robot Starting Location
-Robot(t,1)=(x_1-x_orig)*10;
-Robot(t,2)=(y_1-y_orig)*10;
-z_one(1)=z_1*10;
+Robot(t,1) = x_1*10;
+Robot(t,2) = y_1*10;
+z_one(1) = z_1*10;
 Time_save(1)=0;
 D_z=0;
 I_z=0;
@@ -201,21 +205,19 @@ t_count=0;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%---------------------- COORDINATE ENVIRONMENT LAB -------------------%
+%---------------------- COORDINATE ENVIRONMENT SIM -------------------%
 % Coordinates setup at 1dm distances, and roll at 0.05rads, pitch/yaw
 % at 0.1rads
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
-x_coord=[1:dx:x_max/2];
-y_coord=[1:dy:y_max];
-zee_coord=[1:dz:z_max];
+
+x_coord=[1:dx:x_max-x_min+1];
+y_coord=[1:dy:y_max-y_min+1];
+zee_coord=[1:dz:z_max-z_min+1];
 z_coord(1,1,:)=zee_coord;
 roll_coord=[0:droll:2*pi];
 pitch_coord=[0:dpitch:2*pi];
 yaw_coord=[0:dyaw:2*pi];
 % IC's will be a fixed position
-
-
 
 % Stores XYZ/RPY of quad-2 wrt time
 x_i=zeros(1,length(time));
@@ -226,14 +228,14 @@ pitch_i=zeros(1,length(time));
 yaw_i=zeros(1,length(time));
 
 
-eul=quat2eul([qw_2 qx_2 qy_2 qz_2]); % quat2eul : quaternion to euler angle conversion
+eul = quat2eul([qw_2 qx_2 qy_2 qz_2]); % quat2eul : quaternion to euler angle conversion
 roll_i(1,t_count+1) = eul(3); 
 pitch_i(1,t_count+1) =  eul(2);
-yaw_i(1,t_count+1) =eul(1);
+yaw_i(1,t_count+1) = eul(1);
 
 
-x_i(1,t_count+1)=(x_2-x_orig)*10;
-y_i(1,t_count+1)=(y_2-y_orig)*10;
+x_i(1,t_count+1)=x_2*10;
+y_i(1,t_count+1)=y_2*10;
 z_i(1,t_count+1)=z_2*10;
 
  
@@ -296,7 +298,6 @@ while K>0
     for j=1:K-1
         paths(:,K+2*j+1)=paths(:,K+2*j+1)+sqrt((goal(paths(:,j+1),1)-Robot(t,1)).^2+(goal(paths(:,j+1),2)-Robot(t,2)).^2);
     end
-
   
     for j=1:K-1
         possible_collab_lengths(:,j)=max(paths(:,K+2*j),paths(:,K+2*j+1));
@@ -329,8 +330,8 @@ while K>0
             ctrl_msg(1).Yaw=0;
 
             %Just an example
-            Human(t+1,1)=(x_head-x_orig)*10;
-            Human(t+1,2)=(y_head-y_orig)*10;
+            Human(t+1,1)=(x_head-x_orig_ws)*10;
+            Human(t+1,2)=(y_head-y_orig_ws)*10;
 
             %Cycle through each goal
             for k=1:K
@@ -340,8 +341,8 @@ while K>0
 
             %Now Update Distribution
     
-            P_g_s=P_a_sg.*P_g_s;
-            P_g_s=P_g_s./sum(P_g_s);
+            P_g_s = P_a_sg.*P_g_s;
+            P_g_s = P_g_s./sum(P_g_s);
          
             
             Robot_Goal_P=zeros(K,1);
@@ -349,17 +350,17 @@ while K>0
              %Robot_Goal_P(opt_path(k,K))=Robot_Goal_P(opt_path(k,K))+P_g_s(k);
                 Robot_Goal_P(Robot_Goals(k,1))=Robot_Goal_P(Robot_Goals(k,1))+P_g_s(K+1-k);
             end
-            Robot_feas_zone=inf*ones(y_max,x_max);
+            Robot_feas_zone=inf*ones(y_max-y_min+1,x_max-x_min+1);
             
-            for x=1:x_max
-                for y=1:y_max
+            for x=1:x_max-x_min+1
+                for y=1:y_max-y_min+1
                     if norm([x-Robot(t,1),y-Robot(t,2)])<=R_max
                         Robot_feas_zone(y,x)=1; 
                     end
                 end
             end
           
-            Robot_opt_map=zeros(y_max,x_max);
+            Robot_opt_map=zeros(y_max-y_min+1,x_max-x_min+1);
             normalizer=0;
          
             for k=1:K
@@ -373,15 +374,16 @@ while K>0
             [y_rob_dest,x_rob_dest]=ind2sub(size(Robot_opt_map),rob_dex);
             %Propagate Robot State
 
-            SEND_DEST_X=(x_rob_dest/10)+x_orig;
-            SEND_DEST_Y=(y_rob_dest/10)+y_orig;
+            SEND_DEST_X=(x_rob_dest/10);
+            SEND_DEST_Y=(y_rob_dest/10);
             Time_save(t+1)=toc;
             z_one(t+1)=z_1;
-            P_z=1.3-z_one(end);
+            
+            P_z=arm_thresh-z_one(end);
             D_z=diff(z_one(end-1:end))/diff(Time_save(end-1:end));
-            I_z=I_z+(1.3-z_one(end))*diff(Time_save(end-1:end));
+            I_z=I_z+(arm_thresh-z_one(end))*diff(Time_save(end-1:end));
 
-
+            % PID Gains
             %Works good for v_xy and v_z are both 1.0 in quadparameters.yaml
             v_z_prefilt(t)=.1*P_z-.05*D_z+.0001*I_z;
             print=[P_z D_z I_z];
@@ -396,8 +398,8 @@ while K>0
 
 
             heading_vec=[SEND_DEST_X-x_1,SEND_DEST_Y-y_1]./norm([SEND_DEST_X-x_1,SEND_DEST_Y-y_1]);
-            v_x=.2*heading_vec(1);
-            v_y=.2*heading_vec(2);
+            v_x=scale*heading_vec(1);
+            v_y=scale*heading_vec(2);
 
             Orient=quat2eul([qw_1 qx_1 qy_1 qz_1]);
             Rot_Mat=[cos(Orient(2))*cos(Orient(1)),(sin(Orient(3))*sin(Orient(2))*cos(Orient(1))-cos(Orient(3))*sin(Orient(1))),(cos(Orient(3))*sin(Orient(2))*cos(Orient(1))+sin(Orient(3))*sin(Orient(1))); ...
@@ -411,8 +413,8 @@ while K>0
             send(ctrl_pub(1),ctrl_msg(1));  
 
 
-            Robot(t+1,1)=(x_1-x_orig)*10;
-            Robot(t+1,2)=(y_1-y_orig)*10;
+            Robot(t+1,1)=x_1*10;
+            Robot(t+1,2)=y_1*10;
             z_one(t+1)=z_1;
             P_save(1:length(P_g_s),t)=P_g_s;
 
@@ -455,12 +457,14 @@ while K>0
             ctrl_msg(1).X=0;
             ctrl_msg(1).Y=0;
             z_one(t+1)=z_1;
-            P_z=1.3-z_one(end);
+            P_z=arm_thresh-z_one(end);
             D_z=diff(z_one(end-1:end))/diff(Time_save(end-1:end));
-            I_z=I_z+(1.3-z_one(end))*diff(Time_save(end-1:end));
-
+            I_z=I_z+(arm_thresh-z_one(end))*diff(Time_save(end-1:end));
+            
+            % PID Gains
             %WORKS GOOD WHEN max v_xy and v_z are both 0.1 in qua1parameters.yaml
             v_z_prefilt(t)=5*P_z-4*D_z+.005*I_z;
+            % PID Gains
             %Works good for v_xy and v_z are both 1.0 in quadparameters.yaml
             v_z_prefilt(t)=.1*P_z-.05*D_z+.0001*I_z;
             print=[P_z D_z I_z];
@@ -722,8 +726,8 @@ while K>0
         yaw_i(1,t_count+1) =eul(1);
 
 
-        x_i(1,t_count+1)=(x_2-x_orig)*10;
-        y_i(1,t_count+1)=(y_2-y_orig)*10;
+        x_i(1,t_count+1)=x_2*10;
+        y_i(1,t_count+1)=y_2*10;
         z_i(1,t_count+1)=z_2*10;
 
         if x_i(t_count+1)>max(x_coord)
@@ -802,27 +806,29 @@ while K>0
         %-------------------------- GESTURE CONTROL --------------------------%
         % Follow the arm to a position it points at if right raised & left not
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        fprintf("Right Hand: %f, Left Hand: %f\n",z_right, z_left);
+        
+        if z_right>arm_thresh && z_left<arm_thresh
 
-        if z_right>1.3 && z_left<1.3
-
-            dist_me=norm([x_head-x_2,y_head-y_2]);
-
-            if z_2<1.3
-               v_z=0.2;
+            dist_me=norm([x_head - (x_orig_ws + x_2) ,y_head- (y_orig_ws + y_2)]);
+            fprintf("head: (%f, %f, %f), hbirddg: (%f, %f, %f), dist:%f \n", x_head, y_head, z_head, x_2, y_2, z_2, dist_me);
+            
+            if z_2<arm_thresh
+               v_z = scale;
             else
-               v_z=-0.2;
+               v_z = -scale;
             end
 
             if dist_me<1
-                heading_vec=-[x_head-x_2,y_head-y_2]./dist_me;
-                v_x=.2*heading_vec(1);
-                v_y=.2*heading_vec(2);
+                heading_vec=-[x_head - (x_orig_ws + x_2) ,y_head- (y_orig_ws + y_2)]./dist_me;
+                v_x=scale*heading_vec(1);
+                v_y=scale*heading_vec(2);
             end
 
             if dist_me>1
-                heading_vec=[x_head-x_2,y_head-y_2]./dist_me;
-                v_x=.2*heading_vec(1);
-                v_y=.2*heading_vec(2);
+                heading_vec=[x_head - (x_orig_ws + x_2) ,y_head- (y_orig_ws + y_2)]./dist_me;
+                v_x=scale*heading_vec(1);
+                v_y=scale*heading_vec(2);
             end
 
 
@@ -841,16 +847,16 @@ while K>0
         %-------------------------- GESTURE CONTROL --------------------------%
         % Come close to the operator and hover if left arm raised and right not
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if z_left>1.3
-            pos_rel_arm=[x_2-x_right;y_2-y_right;z_2-z_right];
+        if z_left>arm_thresh
+            pos_rel_arm=[x_2-x_right-x_orig_ws; y_2-y_right-y_orig_ws; z_2-z_right-z_orig_ws];
             Orient_right=quat2eul([qw_right qx_right qy_right qz_right]);
             Rot_Mat_right=[cos(Orient_right(2))*cos(Orient_right(1)),(sin(Orient_right(3))*sin(Orient_right(2))*cos(Orient_right(1))-cos(Orient_right(3))*sin(Orient_right(1))),(cos(Orient_right(3))*sin(Orient_right(2))*cos(Orient_right(1))+sin(Orient_right(3))*sin(Orient_right(1))); ...
              cos(Orient_right(2))*sin(Orient_right(1)),(sin(Orient_right(3))*sin(Orient_right(2))*sin(Orient_right(1))+cos(Orient_right(3))*cos(Orient_right(1))),(cos(Orient_right(3))*sin(Orient_right(2))*sin(Orient_right(1))-sin(Orient_right(3))*cos(Orient_right(1))); ...
              -sin(Orient_right(2)),(sin(Orient_right(3))*cos(Orient_right(2))),(cos(Orient_right(3))*cos(Orient_right(2)))];
             pos_rel_arm=Rot_Mat_right\pos_rel_arm; %Now in the arm frame
-            v_x=.2;
-            v_y=-.2*pos_rel_arm(2);
-            v_z=-.2*pos_rel_arm(3);
+            v_x=scale;
+            v_y=-scale*pos_rel_arm(2);
+            v_z=-scale*pos_rel_arm(3);
             Back_to_room=Rot_Mat_right*[v_x;v_y;v_z];
 
             Orient=quat2eul([qw_2 qx_2 qy_2 qz_2]);
@@ -898,36 +904,41 @@ while K>0
         z_right_1=min(length(z_coord),curr_z_Indx_Num+1*(Ri+2*r_i)/dz);
 
         Q_mod(y_left_1:y_right_1,x_left_1:x_right_1,z_left_1:z_right_1)=c_star;
-
-
+        
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Make Scatter Plot of the Simulation
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if t_count==1
             coverror_init=trapz(trapz(trapz(max(0,c_star).^3)))*dx*dy*dz;
-            [xx,yy,zz]=meshgrid(1:3:25,1:3:50,1:3:50);
-            temp=max(0,c_star-Q(1:3:50,1:3:25,1:3:50));
+            [xx,yy,zz]=meshgrid(x_min:3:x_max,y_min:3:y_max,z_min:3:z_max);
+            temp=max(0,c_star-Q(1:3:y_max-y_min+1,1:3:x_max-x_min+1,1:3:z_max-z_min+1));
             tempp=temp(:);
             h=scatter3(xx(:),yy(:),zz(:),1,tempp,'linewidth',10);
             h.CDataSource='tempp';
             caxis([0 c_star-1])
             view([80,15])
-            xlim([0,25])
-            ylim([0,50])
+            xlim([x_min, x_max])
+            ylim([y_min, y_max])
+            zlim([z_min, z_max])
             xlabel('x')
             ylabel('y')
+            zlabel('z')
             alpha(0.1);
         end
         
-        temp=max(0,c_star-Q(1:3:50,1:3:25,1:3:50));  
+        temp=max(0,c_star-Q(1:3:y_max-y_min+1,1:3:x_max-x_min+1,1:3:z_max-z_min+1));  
         tempp=temp(:);
         refreshdata(h)
         coverror(t_count)=trapz(trapz(trapz(max(0,c_star-Q(:,:,:)).^3)))*dx*dy*dz;
         coverror(t_count)=coverror(t_count)/coverror_init;
             
         %%%%%END COVERAGE CONTROL CODE HERE%%%%%
-        Human(t+1,1)=(x_head-x_orig)*10;
-        Human(t+1,2)=(y_head-y_orig)*10;
-        Robot(t+1,1)=(x_1-x_orig)*10;
-        Robot(t+1,2)=(y_1-y_orig)*10;
-        z_one(t+1)=z_1;
+        Human(t+1,1) = (x_head-x_orig_ws)*10;
+        Human(t+1,2) = (y_head-y_orig_ws)*10;
+        Robot(t+1,1) = x_1*10;
+        Robot(t+1,2) = y_1*10;
+        z_one(t+1) = z_1;
         t=t+1;
         drawnow
     end
@@ -940,15 +951,17 @@ while(1)
     ctrl_msg(1).Type = 2;
     ctrl_msg(1).X = 0;
     ctrl_msg(1).Y = 0;
-    ctrl_msg(1).Z = -.5;
+    ctrl_msg(1).Z = 0;
     ctrl_msg(1).Yaw = 0;
     send(ctrl_pub(1),ctrl_msg(1));
     ctrl_msg(2).Type = 2;
     ctrl_msg(2).X = 0;
     ctrl_msg(2).Y = 0;
-    ctrl_msg(2).Z = -.5;
+    ctrl_msg(2).Z = 0;
     ctrl_msg(2).Yaw = 0;
-    send(ctrl_pub(2),ctrl_msg(2));  
+    send(ctrl_pub(2),ctrl_msg(2));
+    disp("publishing here");
+    
 end
 
 clear global qx qy qz qw x y z;
