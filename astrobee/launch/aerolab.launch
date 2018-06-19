@@ -91,9 +91,9 @@
     </group>
 
 
-
     <!-- =========================================================================
     ======================== SPAWN ONE ASTROBEE ROBOT ============================
+    This robot is launched to behave in only gesture control mode in the simulator
     ========================================================================== -->
 
     <group if="$(eval arg('insert')==1)" ns="/astrobeesim1">
@@ -103,13 +103,14 @@
         <node pkg="robot_state_publisher" type="robot_state_publisher" name="astrobee_state_publisher" />
         <arg name="gpose_1" value="2 0 4.8 0 0 0 1"/>
         <node name="spawn_astrobee_1" pkg="astrobee_gazebo" type="spawn_model"
-        args="-param /astrobeesim1/robot_description -urdf -model /hbirddg -pose  $(arg gpose_1)" />    
+        args="-param /astrobeesim1/robot_description -urdf -model hbirddg -pose  $(arg gpose_1)" />    
     </group>
 
 
 
     <!-- =========================================================================
     ======================== SPAWN TWO ASTROBEE ROBOTS ===========================
+    = Two robots are launched behaving in both gesture control and coverage mode =
     ========================================================================== -->
     <group if="$(eval arg('insert')==2)" ns="/astrobeesim2">
         <!-- Define Robot Description  -->
@@ -121,9 +122,9 @@
 
         <!-- Spawn 2 astrobee robots -->
         <node name="spawn_astrobee_1" pkg="astrobee_gazebo" type="spawn_model"
-            args="-param /astrobeesim2/robot_description -urdf -model /hbirdb -pose  $(arg gpose_1)" />    
+            args="-param /astrobeesim2/robot_description -urdf -model hbirdb -pose  $(arg gpose_1)" />    
         <node name="spawn_astrobee_2" pkg="astrobee_gazebo" type="spawn_model"
-            args="-param /astrobeesim2/robot_description -urdf -model /hbirddg -pose  $(arg gpose_2)" />
+            args="-param /astrobeesim2/robot_description -urdf -model hbirddg -pose  $(arg gpose_2)" />
     </group>
 
 </launch>

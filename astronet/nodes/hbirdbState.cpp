@@ -1,3 +1,9 @@
+/*
+Node to get current state of quadrotor
+and/or astrobee in coverage mode 
+Astrobee Name - HBIRDB
+*/
+
 #include <ros/ros.h>
 #include <gazebo_msgs/GetModelState.h>
 #include <geometry_msgs/Transform.h>
@@ -19,7 +25,7 @@ int main(int argc, char **argv) {
 
 	// call services and get model states
 	gazebo_msgs::GetModelState model1;
-	model1.request.model_name = "/hbirdb";
+	model1.request.model_name = "hbirdb";
 	
 	ROS_WARN("Starting Service for Publishing the State of Quad_hbirdb");
 

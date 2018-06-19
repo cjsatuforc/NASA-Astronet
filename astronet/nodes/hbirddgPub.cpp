@@ -1,3 +1,9 @@
+/*
+Node to publish control messages to 
+quadrotor/ astrobee in gesture mode 
+Astrobee Name - HBIRDDG
+*/
+
 #include <ros/ros.h>
 #include <gazebo_msgs/GetModelState.h>
 #include <gazebo_msgs/ModelState.h>
@@ -11,7 +17,7 @@ ServiceClient client;
 
 void publish_hbirddg(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0, float yaw=0.0) {
 	gazebo_msgs::GetModelState modelstate;
-	modelstate.request.model_name = "/hbirddg";
+	modelstate.request.model_name = "hbirddg";
 	client.call(modelstate);
 
 	// preserve position and orientation
@@ -40,7 +46,7 @@ void publish_hbirddg(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, flo
 void listener_hbirddg(const asctec_hl_comm::mav_ctrl &msg) {
 	ROS_WARN("HbirdDG:= x: %.2f, y: %.2f, z: %.2f, yaw: %.2f",msg.x, msg.y, msg.z, msg.yaw);
 	gazebo_msgs::ModelState new_msg;
-	new_msg.model_name = "/hbirddg";
+	new_msg.model_name = "hbirddg";
 	publish_hbirddg(new_msg, msg.x, msg.y, msg.z, msg.yaw);
 }
 

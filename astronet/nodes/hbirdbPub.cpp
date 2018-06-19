@@ -1,3 +1,9 @@
+/*
+Node to publish control messages to 
+quadrotor/ astrobee in coverage mode 
+Astrobee Name - HBIRDB
+*/
+
 #include <ros/ros.h>
 #include <gazebo_msgs/GetModelState.h>
 #include <gazebo_msgs/ModelState.h>
@@ -11,7 +17,7 @@ ServiceClient client;
 
 void publish_hbirdb(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0, float yaw=0.0) {
 	gazebo_msgs::GetModelState modelstate;
-	modelstate.request.model_name = "/hbirdb";
+	modelstate.request.model_name = "hbirdb";
 	client.call(modelstate);
 
 	// preserve position and orientation
@@ -34,13 +40,13 @@ void publish_hbirdb(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, floa
 
 	ROS_WARN("Publishing Calculated States for HbirdB");
 
-	// pub.publish(msg);
+	pub.publish(msg);
 }
 
 void listener_hbirdb(const asctec_hl_comm::mav_ctrl &msg) {
 	ROS_WARN("HbirdB:= x: %.2f, y: %.2f, z: %.2f, yaw: %.2f",msg.x, msg.y, msg.z, msg.yaw);
 	gazebo_msgs::ModelState new_msg;
-	new_msg.model_name = "/hbirdb";
+	new_msg.model_name = "hbirdb";
 	publish_hbirdb(new_msg, msg.x, msg.y, msg.z, msg.yaw);
 }
 
