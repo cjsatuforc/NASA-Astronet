@@ -8,7 +8,7 @@
     <arg name="ns" default="" />
     <arg name="pose" default="" />
     <arg name="robot" default="sim" />            <!-- Robot name              -->
-    <arg name="world" default="aerolab" />            <!-- World name              -->
+    <arg name="world" default="aerolab-vicon" />            <!-- World name              -->
     <!-- <arg name="ns" default="" /> -->
     <arg name="output" default="log"/>            <!-- Where nodes should log  -->
     <arg name="nodes" default=""/>                <!-- Launch specific nodes   -->
