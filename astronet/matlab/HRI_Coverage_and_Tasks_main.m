@@ -879,7 +879,7 @@ while K>0
         ctrl_msg(2).Z = wi(t_count);
         ctrl_msg(2).Yaw = si(t_count);
         send(ctrl_pub(2),ctrl_msg(2));  
-
+        disp("publishing here for quad 2");
 
         %Propogate Coverage Level
         if t_count==1
@@ -945,23 +945,6 @@ while K>0
 
     Final_Time=Capture_List(end,end);
     %End of outer loop
-end
-
-while(1)
-    ctrl_msg(1).Type = 2;
-    ctrl_msg(1).X = 0;
-    ctrl_msg(1).Y = 0;
-    ctrl_msg(1).Z = 0;
-    ctrl_msg(1).Yaw = 0;
-    send(ctrl_pub(1),ctrl_msg(1));
-    ctrl_msg(2).Type = 2;
-    ctrl_msg(2).X = 0;
-    ctrl_msg(2).Y = 0;
-    ctrl_msg(2).Z = 0;
-    ctrl_msg(2).Yaw = 0;
-    send(ctrl_pub(2),ctrl_msg(2));
-    disp("publishing here");
-    
 end
 
 clear global qx qy qz qw x y z;

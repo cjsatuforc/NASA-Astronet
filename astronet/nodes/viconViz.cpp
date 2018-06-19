@@ -7,6 +7,11 @@ messages capturing wrist and head motions
 #include <gazebo_msgs/GetModelState.h>
 #include <gazebo_msgs/ModelState.h>
 #include <geometry_msgs/TransformStamped.h>
+#define headHeight 1.85
+#define shoulderHeight 1.75
+#define scaleX 0.5
+#define scaleY 1
+#define scaleZ 0.3
 
 using namespace ros;
 
@@ -17,73 +22,93 @@ Subscriber sub_right;
 
 // publisher required for every model
 Publisher pub_head;
+Publisher pub_torso;
 Publisher pub_left;
 Publisher pub_right;
 
 // Single client required for storing all values
 ServiceClient client;
 
-float head_x, head_y, head_z;
-float left_x, left_y, left_z;
-float right_x, right_y, right_z;
+// declare initial values for the states of each model
+float head_x = 7.75, head_y = 0, head_z = 5.25;
+float torso_x = 7.75, torso_y = 0, torso_z = 4.75;
+float left_x = 7.25, left_y = -0.25, left_z = 5;
+float right_x = 7.25, right_y = 0.25, right_z = 5;
 
 // Client to get initial states of all models
 void get_states() {
-	gazebo_msgs::GetModelState head_state;
-	gazebo_msgs::GetModelState left_state;
-	gazebo_msgs::GetModelState right_state;
-
-	head_state.request.model_name = "head";
-	left_state.request.model_name = "left";
-	right_state.request.model_name = "right";
+	gazebo_msgs::GetModelState modelstate;
 
 	// store head position
-	client.call(head_state);
-	head_x = head_state.response.pose.position.x;
-	head_y = head_state.response.pose.position.y;
-	head_z = head_state.response.pose.position.z;
+	modelstate.request.model_name = "head";
+	client.call(modelstate);
+	head_x = modelstate.response.pose.position.x;
+	head_y = modelstate.response.pose.position.y;
+	head_z = modelstate.response.pose.position.z;
+
+	// store torso position
+	modelstate.request.model_name = "torso";
+	client.call(modelstate);
+	torso_x = modelstate.response.pose.position.x;
+	torso_y = modelstate.response.pose.position.y;
+	torso_z = modelstate.response.pose.position.z;
 
 	// store left arm position
-	client.call(left_state);
-	left_x = left_state.response.pose.position.x;
-	left_y = left_state.response.pose.position.y;
-	left_z = left_state.response.pose.position.z;
+	modelstate.request.model_name = "left";
+	client.call(modelstate);
+	left_x = modelstate.response.pose.position.x;
+	left_y = modelstate.response.pose.position.y;
+	left_z = modelstate.response.pose.position.z;
 
 	// store right arm position
-	client.call(right_state);
-	right_x = right_state.response.pose.position.x;
-	right_y = right_state.response.pose.position.y;
-	right_z = right_state.response.pose.position.z;
+	modelstate.request.model_name = "right";
+	client.call(modelstate);
+	right_x = modelstate.response.pose.position.x;
+	right_y = modelstate.response.pose.position.y;
+	right_z = modelstate.response.pose.position.z;
 }
 
 
 
 
 // Model Publishers
+void publish_torso(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0) {
+	// preserve position and orientation
+	msg.pose.position.x = torso_x + scaleX*x;
+	msg.pose.position.y = torso_y + scaleY*y;
+	msg.pose.position.z = torso_z; // setting average value of head_z as origin
+	pub_torso.publish(msg);
+}
+
+
 void publish_head(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0) {
 	// preserve position and orientation
-	msg.pose.position.x = head_x + x;
-	msg.pose.position.y = head_y + y;
-	msg.pose.position.z = head_z + z;
+	msg.pose.position.x = head_x + scaleX*x;
+	msg.pose.position.y = head_y + scaleY*y;
+	msg.pose.position.z = head_z + scaleZ*(z - headHeight); // setting average value of head_z as origin
 	pub_head.publish(msg);
+
+	gazebo_msgs::ModelState torso_msg;
+	torso_msg.model_name = "torso";
+	publish_torso(torso_msg, x, y, z);
 }
 
 
 void publish_left(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0) {
 	// preserve position and orientation
-	msg.pose.position.x = left_x + x;
-	msg.pose.position.y = left_y + y;
-	msg.pose.position.z = left_z + z;
+	msg.pose.position.x = left_x + scaleX*x;
+	msg.pose.position.y = left_y + scaleY*y;
+	msg.pose.position.z = left_z + scaleZ*(z - shoulderHeight);
 	pub_left.publish(msg);
 }
 
 
 void publish_right(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0) {
 	// preserve position and orientation
-	msg.pose.position.x = right_x + x;
-	msg.pose.position.y = right_y + y;
-	msg.pose.position.z = right_z + z;
-	pub_right.publish(msg);	
+	msg.pose.position.x = right_x + scaleX*x;
+	msg.pose.position.y = right_y + scaleY*y;
+	msg.pose.position.z = right_z + scaleZ*(z - shoulderHeight);
+	pub_right.publish(msg);
 }
 
 
@@ -96,6 +121,7 @@ void listener_head(const geometry_msgs::TransformStamped &msg) {
 
 	gazebo_msgs::ModelState head_msg;
 	head_msg.model_name = "head";
+
 	publish_head(head_msg, x, y, z);
 }
 
@@ -131,15 +157,19 @@ int main(int argc, char **argv) {
 	sub_right = nh.subscribe("/vicon/Right_Arm/Right_Arm", 10000, &listener_right);
 
 	pub_head = nh.advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 10000);
+	pub_torso = nh.advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 10000);
 	pub_left = nh.advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 10000);
 	pub_right = nh.advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 10000);
 
 	client = nh.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state");
 
-	// capture and store initial positions of all models
-	get_states();
+	/*
+	capture and store initial positions of all models
+	to be fixed for delayed launch. Node works fine 
+	when launched standalone but produces readings of 
+	(0,0,0) when launched from launch file.
+	*/
+	// get_states();
 
-	ROS_INFO("Initial Positions Captured, %f, %f, %f", head_x, right_x, left_x);
-	
 	spin();
 }
