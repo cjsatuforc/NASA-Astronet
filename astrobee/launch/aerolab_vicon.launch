@@ -87,6 +87,11 @@
             <arg name="sviz" value="$(arg sviz)" />
             <arg name="vmware" value="$(arg vmware)" />
         </include>
+
+        
+        <!-- Spawn the publisher and subscriber services for visualizing vicon data -->
+        <node name="vicon_visualizer" pkg="aerolab" type="viconviz" output="screen" />
+
     </group>
 
 
