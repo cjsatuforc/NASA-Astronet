@@ -120,7 +120,7 @@ z_orig_ws = 0;
 arm_thresh = 1.5;
 
 % defining velocity scale
-scale = 0.2;
+scale = 0.05; % original 0.2
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -130,24 +130,24 @@ scale = 0.2;
 t=1;
 
 %Place goals at random locations
-goal(1,1)=((x_max - x_min)*rand() + 1)*10;
-goal(1,2)=((y_max - y_min)*rand() + 1)*10;
+goal(1,1)=((x_max - x_min)*rand() + 1);
+goal(1,2)=((y_max - y_min)*rand() + 1);
 
-goal(2,1)=((x_max - x_min)*rand() + 1)*10;
-goal(2,2)=((y_max - y_min)*rand() + 1)*10;
+goal(2,1)=((x_max - x_min)*rand() + 1);
+goal(2,2)=((y_max - y_min)*rand() + 1);
 
 
-goal(2,1)=((x_max - x_min)*rand() + 1)*10;
-goal(2,2)=((y_max - y_min)*rand() + 1)*10;
+goal(2,1)=((x_max - x_min)*rand() + 1);
+goal(2,2)=((y_max - y_min)*rand() + 1);
 
-goal(3,1)=((x_max - x_min)*rand() + 1)*10;
-goal(3,2)=((y_max - y_min)*rand() + 1)*10;
+goal(3,1)=((x_max - x_min)*rand() + 1);
+goal(3,2)=((y_max - y_min)*rand() + 1);
 
-goal(4,1)=((x_max - x_min)*rand() + 1)*10;
-goal(4,2)=((y_max - y_min)*rand() + 1)*10;
+goal(4,1)=((x_max - x_min)*rand() + 1);
+goal(4,2)=((y_max - y_min)*rand() + 1);
 
-goal(5,1)=((x_max - x_min)*rand() + 1)*10;
-goal(5,2)=((y_max - y_min)*rand() + 1)*10;
+goal(5,1)=((x_max - x_min)*rand() + 1);
+goal(5,2)=((y_max - y_min)*rand() + 1);
 
 %Human Starting Location
 Human(t,1)=(x_head-x_orig_ws)*10;
@@ -168,12 +168,11 @@ z_2 = z_2 - z_orig;
 Robot(t,1) = x_1*10;
 Robot(t,2) = y_1*10;
 z_one(1) = z_1*10;
-Time_save(1)=0;
-D_z=0;
-I_z=0;
-P_z=0;
-Capture_Flag=0;
 
+Capture_Flag=0;
+Time_save(1) = 0;
+
+D_z = 0; I_z = 0; P_z = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------  SETUP COVERAGE PARAMETERS -------------------------%
@@ -407,11 +406,12 @@ while K>0
                  -sin(Orient(2)),(sin(Orient(3))*cos(Orient(2))),(cos(Orient(3))*cos(Orient(2)))];
 
             Control_body=Rot_Mat\[v_x;v_y;v_z];
+            
             ctrl_msg(1).X=Control_body(1);
             ctrl_msg(1).Y=Control_body(2);
             ctrl_msg(1).Z=Control_body(3);
             send(ctrl_pub(1),ctrl_msg(1));  
-
+            disp("#1 publishing here for quad 1 - coverage control - Hbirdb");
 
             Robot(t+1,1)=x_1*10;
             Robot(t+1,2)=y_1*10;
@@ -478,7 +478,8 @@ while K>0
             v_z_save(t)=v_z;
             ctrl_msg(1).Z=v_z;     
 
-            send(ctrl_pub(1),ctrl_msg(1));  
+            send(ctrl_pub(1),ctrl_msg(1));
+            disp("#2 publishing here for quad 1 - coverage control - Hbirdb");
             Capture_Time_Temp=clock;
             
             if Capture_Time_Temp(4)*3600+Capture_Time_Temp(5)*60+Capture_Time_Temp(6)>Capture_Time+30
@@ -879,7 +880,7 @@ while K>0
         ctrl_msg(2).Z = wi(t_count);
         ctrl_msg(2).Yaw = si(t_count);
         send(ctrl_pub(2),ctrl_msg(2));  
-        disp("publishing here for quad 2");
+        disp("#3 publishing here for quad 2 - gesture control - Hbirddg");
 
         %Propogate Coverage Level
         if t_count==1
