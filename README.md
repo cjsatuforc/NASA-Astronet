@@ -1,6 +1,19 @@
 # The AstroNet: A Human-Centric Network of Free-Flying Space Co-Robots
 The [AstroNet](https://www.nasa.gov/directorates/spacetech/strg/ecf2016/AstroNet.html) Simulator is developed as an extension to NASA's Astrobee simulator, where control schemes, task allocation paradigms and navigation algorithms for each of the Astrobee Robots are developed. ROS Kinetic is used for simulating the algorithms, and to interface with the quadcopters (representing astrobee robots in our environment). An interactive VR-based environment of the whole International Space Station, with the robots in it, has been implemented and can be visualized on the [Oculus Rift](https://www.oculus.com/rift/).
 
+## Building Instructions
+Run ```install_astrobee.sh``` in a terminal. The software repositories are contained within Documents/Astrobee and Documents/Astronet folders.
+
+Goto the CMakeLists.txt of msf_timing and msf_core and add the path to the gtest library if it creates an error while compiling as follows:
+```xml
+set(GTEST_ROOT "/usr/src/gtest" CACHE PATH "Path to googletest")
+find_package(GTest REQUIRED)
+if(NOT GTEST_LIBRARY)
+   message("not found")
+endif()
+```
+
+
 
 ## Astrobee Robot Software - Flight Software repository
 
