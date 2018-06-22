@@ -5,10 +5,8 @@ messages capturing wrist and head motions
 
 Coordinate Conventions:
 when you move towards +x in the workspace, the 
-gazebo model towards -x. When the model moves 
-towards +y, the gazebo model moves towards -y.
-Since the model of the man is mirrored in the
-y-axis, we only fix that.
+gazebo model towards +x. When the model moves 
+towards +y, the gazebo model moves towards +y.
 */
 
 #include <ros/ros.h>
@@ -38,10 +36,10 @@ Publisher pub_right;
 ServiceClient client;
 
 // declare initial values for the states of each model
-float head_x = 7.75, head_y = 0, head_z = 5.25;
-float torso_x = 7.75, torso_y = 0, torso_z = 4.75;
-float left_x = 7.25, left_y = -0.25, left_z = 5;
-float right_x = 7.25, right_y = 0.25, right_z = 5;
+float head_x = -3.75, head_y = 0, head_z = 5.25;
+float torso_x = -3.75, torso_y = 0, torso_z = 4.75;
+float left_x = -3.25, left_y = 0.25, left_z = 5;
+float right_x = -3.25, right_y = -0.25, right_z = 5;
 
 // Client to get initial states of all models
 void get_states() {
@@ -83,7 +81,7 @@ void get_states() {
 void publish_torso(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0) {
 	// preserve position and orientation
 	msg.pose.position.x = torso_x + scaleX*x;
-	msg.pose.position.y = torso_y - scaleY*y;
+	msg.pose.position.y = torso_y + scaleY*y;
 	msg.pose.position.z = torso_z; // setting average value of head_z as origin
 	pub_torso.publish(msg);
 }
@@ -92,7 +90,7 @@ void publish_torso(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float
 void publish_head(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0) {
 	// preserve position and orientation
 	msg.pose.position.x = head_x + scaleX*x;
-	msg.pose.position.y = head_y - scaleY*y;
+	msg.pose.position.y = head_y + scaleY*y;
 	msg.pose.position.z = head_z + scaleZ*(z - headHeight); // setting average value of head_z as origin
 	pub_head.publish(msg);
 
@@ -105,7 +103,7 @@ void publish_head(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float 
 void publish_left(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0) {
 	// preserve position and orientation
 	msg.pose.position.x = left_x + scaleX*x;
-	msg.pose.position.y = left_y - scaleY*y;
+	msg.pose.position.y = left_y + scaleY*y;
 	msg.pose.position.z = left_z + scaleZ*(z - shoulderHeight);
 	pub_left.publish(msg);
 }
@@ -114,7 +112,7 @@ void publish_left(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float 
 void publish_right(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0) {
 	// preserve position and orientation
 	msg.pose.position.x = right_x + scaleX*x;
-	msg.pose.position.y = right_y - scaleY*y;
+	msg.pose.position.y = right_y + scaleY*y;
 	msg.pose.position.z = right_z + scaleZ*(z - shoulderHeight);
 	pub_right.publish(msg);
 }

@@ -17,23 +17,14 @@
       <shadows>0</shadows>
     </scene>
     
-    <!-- More adaptable camera -->
-     <gui fullscreen='0'>
+    <!-- Add scene camera -->
+    <gui fullscreen='0'>
       <camera name='user_camera_1'>
-        <pose frame=''>2.5 10.5 5.5 0 0 -1.57</pose>
+        <pose frame=''>-4.08249 8.45773 7.42872 0 0.28 -1.06601</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
     </gui>
-
-    <!-- Better visibility angle -->
-    <!-- <gui fullscreen='0'>
-      <camera name='user_camera_1'>
-        <pose frame=''>6.36564 9.86772 7.73601 0 0.272 -1.92201</pose>
-        <view_controller>ortho</view_controller>
-        <projection_type>orthographic</projection_type>
-      </camera>
-    </gui> -->
 
     <gravity>0 0 0</gravity>
     <magnetic_field>0 0 0</magnetic_field>
@@ -364,18 +355,29 @@
       <model name='iss_model'>
         <pose frame=''>8.46712 -3.4 4.85 -1.5708 0 0</pose>
       </model>
-
       <model name='head'>
-        <pose frame=''>7.75 0 5.25 0 -0 0</pose>
-      </model>
+        <pose frame=''>-3.75 0 5.25 0 -0 0</pose>
+        <velocity>0 0 0 0 -0 0</velocity>
+        <acceleration>0 0 0 0 -0 0</acceleration>
+        <wrench>0 0 0 0 -0 0</wrench>
+      </model>   
       <model name='left'>
-        <pose frame=''>7.25 -0.25 5 0 -0 0</pose>
+        <pose frame=''>-3.25 0.25 5 0 -0 0</pose>
+        <velocity>0 0 0 0 -0 0</velocity>
+        <acceleration>0 0 0 0 -0 0</acceleration>
+        <wrench>0 0 0 0 -0 0</wrench>
       </model>
       <model name='right'>
-        <pose frame=''>7.25 0.25 5 0 -0 0</pose>
+        <pose frame=''>-3.25 -0.25 5 0 -0 0</pose>
+        <velocity>0 0 0 0 -0 0</velocity>
+        <acceleration>0 0 0 0 -0 0</acceleration>
+        <wrench>0 0 0 0 -0 0</wrench>
       </model>
       <model name='torso'>
-        <pose frame=''>7.75 0 4.75 0 -0 0</pose>
+        <pose frame=''>-3.75 0 4.75 0 -0 0</pose>
+        <velocity>0 0 0 0 -0 0</velocity>
+        <acceleration>0 0 0 0 -0 0</acceleration>
+        <wrench>0 0 0 0 -0 0</wrench>
       </model>
 
       <light name='pointLight1'>

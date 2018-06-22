@@ -17,7 +17,7 @@ global z_1 z_head z_left z_right;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%-------------------- ROS parameters - Sahib -------------------------%
+%------------------- ROS parameters - Astronet -----------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 setenv('ROS_MASTER_URI', 'http://localhost:11311');
 rosinit('NodeName', '/matlab');
@@ -66,16 +66,6 @@ gamma=0.55; %discount factor
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%------------------------- SETUP ENVIRONMENT -------------------------%
-% units in dm implies that (x-max, y-max): (5m, 5m) and origin at 
-% (-1.2, -2.6). and 5 goal positions given randomly. Human position is
-% taken wrt to origin, and similarly robots wrt to origin.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%Set up Environment, from 1 up to 100 units.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %-------------------- SIM ENVIRONMENT PARAMETERS ---------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -98,9 +88,9 @@ z_orig_ws = 0;
 % arm height threshold
 arm_thresh = 1.5;
 
-% defining z-velocity and commanded linear/angular velocity scale
-scale = 0.2;
-vel_scale = 0.1;
+% defining z-velocity(was set to 0.2 everywhere previously) and commanded linear/angular velocity scale
+vz_scale = 0.2;
+vel_scale = 0.5;
 yaw_scale = 0.5;
 
 fprintf("Gazebo Origin: (%f, %f, %f) | Workspace Origin: (%f, %f, %f)", x_orig, y_orig, z_orig, x_orig_ws, y_orig_ws, z_orig_ws);
@@ -375,8 +365,8 @@ while K>0
 
 
             heading_vec = [SEND_DEST_X-x_1,SEND_DEST_Y-y_1]./norm([SEND_DEST_X-x_1,SEND_DEST_Y-y_1]);
-            v_x = scale*heading_vec(1);
-            v_y = scale*heading_vec(2);
+            v_x = vz_scale*heading_vec(1);
+            v_y = vz_scale*heading_vec(2);
 
             Orient = quat2eul([qw_1 qx_1 qy_1 qz_1]);
             Rot_Mat = [cos(Orient(2))*cos(Orient(1)),(sin(Orient(3))*sin(Orient(2))*cos(Orient(1))-cos(Orient(3))*sin(Orient(1))),(cos(Orient(3))*sin(Orient(2))*cos(Orient(1))+sin(Orient(3))*sin(Orient(1))); ...
@@ -395,8 +385,6 @@ while K>0
             Robot(t+1,2) = y_1*10;
             z_one(t+1) = z_1;
             P_save(1:length(P_g_s),t) = P_g_s;
-
-
 
 
             %Check capture of target and break infinite loop
@@ -781,28 +769,28 @@ while K>0
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %-------------------------- GESTURE CONTROL --------------------------%
-        %---------------- Come to Papa and hover near the head ---------------%
+        %---------------- Come to daddy and hover near my head ---------------%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if z_right>arm_thresh && z_left<arm_thresh
 
             dist_me = norm([x_head - (x_orig_ws + x_1) ,y_head- (y_orig_ws + y_1)]);
            
             if z_1<arm_thresh
-               v_z = scale;
+               v_z = vz_scale;
             else
-               v_z = -scale;
+               v_z = -vz_scale;
             end
 
             if dist_me<1
                 heading_vec = -[x_head - (x_orig_ws + x_1) ,y_head- (y_orig_ws + y_1)]./dist_me;
-                v_x = scale*heading_vec(1);
-                v_y = scale*heading_vec(2);
+                v_x = vz_scale*heading_vec(1);
+                v_y = vz_scale*heading_vec(2);
             end
 
             if dist_me>1
                 heading_vec = [x_head - (x_orig_ws + x_1) ,y_head- (y_orig_ws + y_1)]./dist_me;
-                v_x = scale*heading_vec(1);
-                v_y = scale*heading_vec(2);
+                v_x = vz_scale*heading_vec(1);
+                v_y = vz_scale*heading_vec(2);
             end
 
 
@@ -828,9 +816,9 @@ while K>0
              cos(Orient_right(2))*sin(Orient_right(1)),(sin(Orient_right(3))*sin(Orient_right(2))*sin(Orient_right(1))+cos(Orient_right(3))*cos(Orient_right(1))),(cos(Orient_right(3))*sin(Orient_right(2))*sin(Orient_right(1))-sin(Orient_right(3))*cos(Orient_right(1))); ...
              -sin(Orient_right(2)),(sin(Orient_right(3))*cos(Orient_right(2))),(cos(Orient_right(3))*cos(Orient_right(2)))];
             pos_rel_arm = Rot_Mat_right\pos_rel_arm; %Now in the arm frame
-            v_x = scale;
-            v_y = -scale*pos_rel_arm(2);
-            v_z = -scale*pos_rel_arm(3);
+            v_x = vz_scale;
+            v_y = -vz_scale*pos_rel_arm(2);
+            v_z = -vz_scale*pos_rel_arm(3);
             Back_to_room = Rot_Mat_right*[v_x;v_y;v_z];
 
             Orient = quat2eul([qw_1 qx_1 qy_1 qz_1]);
