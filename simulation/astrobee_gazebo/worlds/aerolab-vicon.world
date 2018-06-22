@@ -17,13 +17,23 @@
       <shadows>0</shadows>
     </scene>
     
-    <gui fullscreen='0'>
-      <camera name='user_camera'>
+    <!-- More adaptable camera -->
+     <gui fullscreen='0'>
+      <camera name='user_camera_1'>
         <pose frame=''>2.5 10.5 5.5 0 0 -1.57</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
     </gui>
+
+    <!-- Better visibility angle -->
+    <!-- <gui fullscreen='0'>
+      <camera name='user_camera_1'>
+        <pose frame=''>6.36564 9.86772 7.73601 0 0.272 -1.92201</pose>
+        <view_controller>ortho</view_controller>
+        <projection_type>orthographic</projection_type>
+      </camera>
+    </gui> -->
 
     <gravity>0 0 0</gravity>
     <magnetic_field>0 0 0</magnetic_field>
@@ -128,10 +138,10 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <name>Gazebo/Grey</name>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-            </script>
+            <ambient>52 61 70 0.8</ambient>
+            <diffuse>52 61 70 0.8</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <emissive>0 0 0 0</emissive>
           </material>
         </visual>
         <self_collide>0</self_collide>
@@ -181,17 +191,17 @@
             </cylinder>
           </geometry>
           <material>
-            <script>
-              <name>Gazebo/Grey</name>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-            </script>
+            <ambient>192 197 206 0.8</ambient>
+            <diffuse>192 197 206 0.8</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <emissive>0 0 0 0</emissive>
           </material>
         </visual>
         <self_collide>0</self_collide>
         <kinematic>0</kinematic>
       </link>
     </model>
-    <model name='left arm'>
+    <model name='left'>
       <pose frame=''>10.3912 -9.2307 0.5 0 -0 0</pose>
       <link name='link'>
         <inertial>
@@ -232,17 +242,17 @@
             </sphere>
           </geometry>
           <material>
-            <script>
-              <name>Gazebo/Grey</name>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-            </script>
+            <ambient>0 1 0 0.7</ambient>
+            <diffuse>0 1 0 0.7</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <emissive>0 0 0 0</emissive>
           </material>
         </visual>
         <self_collide>0</self_collide>
         <kinematic>0</kinematic>
       </link>
     </model>
-    <model name='right arm'>
+    <model name='right'>
       <pose frame=''>12.3956 -16.4449 0.5 0 -0 0</pose>
       <link name='link'>
         <inertial>
@@ -283,10 +293,10 @@
             </sphere>
           </geometry>
           <material>
-            <script>
-              <name>Gazebo/Grey</name>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-            </script>
+            <ambient>1 0 0 0.7</ambient>
+            <diffuse>1 0 0 0.7</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <emissive>0 0 0 0</emissive>
           </material>
         </visual>
         <self_collide>0</self_collide>
@@ -358,11 +368,11 @@
       <model name='head'>
         <pose frame=''>7.75 0 5.25 0 -0 0</pose>
       </model>
-      <model name='left arm'>
-        <pose frame=''>7 -0.3 5 0 -0 0</pose>
+      <model name='left'>
+        <pose frame=''>7.25 -0.25 5 0 -0 0</pose>
       </model>
-      <model name='right arm'>
-        <pose frame=''>7 0.3 5 0 -0 0</pose>
+      <model name='right'>
+        <pose frame=''>7.25 0.25 5 0 -0 0</pose>
       </model>
       <model name='torso'>
         <pose frame=''>7.75 0 4.75 0 -0 0</pose>
