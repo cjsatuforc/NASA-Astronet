@@ -41,8 +41,7 @@ int main(int argc, char **argv) {
 			pub.publish(hbirdb);
 		}
 		else{
-			ROS_ERROR("Failed to call service");
-			break;
+			ROS_WARN("Waiting for HBIRDB to be detected");
 		}
 	}
 }

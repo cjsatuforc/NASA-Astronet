@@ -1,20 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Head - 
-% min - (-0.095, -0.972, 0)
-% max - (0.55, 0.19, 1.865)
-% avg - (0.095, -0.174, 1.843)
-% 
-% Left Arm - 
-% min - (-0.365, -1.036, 0)
-% max - (0.785, 0.284, 2.135)
-% avg - (0.275, -0.275, 1.713)
-% 
-% Right Arm -
-% min - (-0.546, -0.79, 0)
-% max - (0.75, 0.4, 2.134)
-% avg - (-0.06, -0.22, 1.46)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 rosshutdown, clear, clc;
 close all
 tic
@@ -45,7 +28,7 @@ viconCallback_list = {@viconCallback_hbirdb @viconCallback_William @viconCallbac
 quad_num = 1;
 tic
 
-% subscribe to gazebo states of the models of both quads
+% subscribe to gazebo states of the models of the quad
 vicon_sub(1) = rossubscriber(quad_list{1},'geometry_msgs/Transform',viconCallback_list{1});
 
 % subscribe to the head, left_arm, right_arm positions published by Vicon
@@ -118,6 +101,7 @@ arm_thresh = 1.5;
 % defining velocity scale
 scale = 0.05; % original 0.2
 
+fprintf("Gazebo Origin: (%f, %f, %f) | Workspace Origin: (%f, %f, %f)", x_orig, y_orig, z_orig, x_orig_ws, y_orig_ws, z_orig_ws);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------- SIM ENVIRONMENT DIMS ------------------------%
@@ -149,6 +133,7 @@ goal(5,2)=((y_max - y_min)*rand() + 1);
 Human(t,1)=(x_head-x_orig_ws)*10;
 Human(t,2)=(y_head-y_orig_ws)*10;
 
+disp("Goal positions set are:");
 goal
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -415,13 +400,12 @@ while K>0
 
 
             %Check capture of target and break infinite loop
-            if min(sqrt((Human(t,1)-goal(:,1)).^2+(Human(t,2)-goal(:,2)).^2))<cap_tol || min(sqrt((Robot(t,1)-goal(:,1)).^2+(Robot(t,2)-goal(:,2)).^2))<cap_tol
+            if ((min(sqrt((Human(t,1)-goal(:,1)).^2+(Human(t,2)-goal(:,2)).^2)) < cap_tol) || (min(sqrt((Robot(t,1)-goal(:,1)).^2+(Robot(t,2)-goal(:,2)).^2))<cap_tol))
                 
-                if min(sqrt((Human(t,1)-goal(:,1)).^2+(Human(t,2)-goal(:,2)).^2))<cap_tol
+                if (min(sqrt((Human(t,1)-goal(:,1)).^2+(Human(t,2)-goal(:,2)).^2)) < cap_tol)
                      
                     [garbage,dex]=min(sqrt((Human(t,1)-goal(:,1)).^2+(Human(t,2)-goal(:,2)).^2));
-                    %[x position, y position, agent 1, time]
-                    Capture_List=[Capture_List;goal(dex,:),1,t];
+                    Capture_List = [Capture_List;goal(dex,:),1,t];
                     goal(dex,:)=[];
                     K=K-1;
                    
@@ -431,7 +415,6 @@ while K>0
                 if min(sqrt((Robot(t,1)-goal(:,1)).^2+(Robot(t,2)-goal(:,2)).^2))<cap_tol
                     
                     [garbage,dex]=min(sqrt((Robot(t,1)-goal(:,1)).^2+(Robot(t,2)-goal(:,2)).^2));
-                    %[x position, y position, agent 2, time]
                     Capture_List=[Capture_List;goal(dex,:),2,t];
                     goal(dex,:)=[];
                     K=K-1;
@@ -475,7 +458,7 @@ while K>0
             % disp("#2 publishing here for quad 1 - coverage control - Hbirdb");
             Capture_Time_Temp=clock;
             
-            if Capture_Time_Temp(4)*3600+Capture_Time_Temp(5)*60+Capture_Time_Temp(6)>Capture_Time+30
+            if Capture_Time_Temp(4)*3600+Capture_Time_Temp(5)*60+Capture_Time_Temp(6) > Capture_Time+30
                 Capture_Flag=0;
             end
         end

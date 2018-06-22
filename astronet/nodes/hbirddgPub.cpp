@@ -18,29 +18,32 @@ ServiceClient client;
 void publish_hbirddg(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0, float yaw=0.0) {
 	gazebo_msgs::GetModelState modelstate;
 	modelstate.request.model_name = "hbirddg";
-	client.call(modelstate);
+	if(client.call(modelstate)){
+		// preserve position and orientation
+		msg.pose.position.x = modelstate.response.pose.position.x;
+		msg.pose.position.y = modelstate.response.pose.position.y;
+		msg.pose.position.z = modelstate.response.pose.position.z;
+		
+		msg.pose.orientation.x = modelstate.response.pose.orientation.x;
+		msg.pose.orientation.y = modelstate.response.pose.orientation.y;
+		msg.pose.orientation.z = modelstate.response.pose.orientation.z;
+		msg.pose.orientation.w = modelstate.response.pose.orientation.w;
 
-	// preserve position and orientation
-	msg.pose.position.x = modelstate.response.pose.position.x;
-	msg.pose.position.y = modelstate.response.pose.position.y;
-	msg.pose.position.z = modelstate.response.pose.position.z;
-	
-	msg.pose.orientation.x = modelstate.response.pose.orientation.x;
-	msg.pose.orientation.y = modelstate.response.pose.orientation.y;
-	msg.pose.orientation.z = modelstate.response.pose.orientation.z;
-	msg.pose.orientation.w = modelstate.response.pose.orientation.w;
+		// apply linear and angular velocities
+		msg.twist.linear.x = x;
+		msg.twist.linear.y = y;
+		msg.twist.linear.z = z;
+		msg.twist.angular.x = 0;
+		msg.twist.angular.y = 0;
+		msg.twist.angular.z = yaw;
 
-	// apply linear and angular velocities
-	msg.twist.linear.x = x;
-	msg.twist.linear.y = y;
-	msg.twist.linear.z = z;
-	msg.twist.angular.x = 0;
-	msg.twist.angular.y = 0;
-	msg.twist.angular.z = yaw;
+		ROS_WARN("Publishing Calculated States for HbirdDG");
 
-	ROS_WARN("Publishing Calculated States for HbirdDG");
-
-	pub.publish(msg);
+		pub.publish(msg);
+	}
+	else {
+		ROS_WARN("Waiting for HBIRDDG to be detected");
+	}
 }
 
 void listener_hbirddg(const asctec_hl_comm::mav_ctrl &msg) {
