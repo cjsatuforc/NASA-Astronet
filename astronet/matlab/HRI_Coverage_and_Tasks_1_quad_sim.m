@@ -126,19 +126,14 @@ Human(t,1)=(x_head-x_orig_ws)*10;
 Human(t,2)=(y_head-y_orig_ws)*10;
 
 disp("Goal positions set are:");
-goal
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------- NORMALIZE POSITIONS -------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-x_1 = x_1 - x_orig;
-y_1 = y_1 - y_orig;
-z_1 = z_1 - z_orig;
-
 %Robot Starting Location
-Robot(t,1) = x_1*10;
-Robot(t,2) = y_1*10;
-z_one(1) = z_1*10;
+Robot(t,1) = (x_1 - x_orig)*10;
+Robot(t,2) = (y_1 - y_orig)*10;
+z_one(1) = (z_1 - z_orig)*10;
 
 Capture_Flag = 0;
 Time_save(1) = 0;
@@ -204,9 +199,9 @@ pitch_i(1,t_count+1) =  eul(2);
 yaw_i(1,t_count+1) = eul(1);
 
 
-x_i(1,t_count+1) = x_1*10;
-y_i(1,t_count+1) = y_1*10;
-z_i(1,t_count+1) = z_1*10;
+x_i(1,t_count+1) = (x_1 - x_orig)*10;
+y_i(1,t_count+1) = (y_1 - y_orig)*10;
+z_i(1,t_count+1) = (z_1 - z_orig)*10;
 
  
 %initialize as zero coverage
@@ -236,230 +231,19 @@ S_i = zeros(length(y_coord),length(x_coord),length(z_coord));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 %%Main Loop
-while K>0
-    %Initialize prior belief of next human goal
-    for k = 1:K
-        dist_h_g(k) = 1/norm((Human(t,:)-goal(k,:)));
-    end
-    
-    P_g_s = dist_h_g./sum(dist_h_g(:));
-    P_g_s = transpose(P_g_s);
-
-    %Compute every possible path through the network and it's path length
-    paths  =  perms(1:K);
-    paths(:,K+1) = 0;
-    paths(:,K+2) = sqrt((goal(paths(:,1),1)-Human(t,1)).^2+(goal(paths(:,1),2)-Human(t,2)).^2);
-    
-    for j = 1:K-1
-        paths(:,K+1) = paths(:,K+1)+sqrt((goal(paths(:,j),1)-goal(paths(:,j+1),1)).^2+(goal(paths(:,j),2)-goal(paths(:,j+1),2)).^2);
-        %paths K+2j is human_collab cost and K+2j+1 is robot collab cost
-        %j = 1 corresponds to human with first task and robot with all others, 
-        if j<K-1
-            paths(:,K+2*(j+1)) = paths(:,K+2*j)+sqrt((goal(paths(:,j+1),1)-goal(paths(:,j),1)).^2+(goal(paths(:,j+1),2)-goal(paths(:,j),2)).^2);
-        end
-    end
-    
-    for j = 1:K-1
-        paths(:,K+2*j+1) = paths(:,K+2*j-1)-sqrt((goal(paths(:,j+1),1)-goal(paths(:,j),1)).^2+(goal(paths(:,j+1),2)-goal(paths(:,j),2)).^2);
-    end
-    
-    for j = 1:K-1
-        paths(:,K+2*j+1) = paths(:,K+2*j+1)+sqrt((goal(paths(:,j+1),1)-Robot(t,1)).^2+(goal(paths(:,j+1),2)-Robot(t,2)).^2);
-    end
-  
-    for j = 1:K-1
-        possible_collab_lengths(:,j) = max(paths(:,K+2*j),paths(:,K+2*j+1));
-    end
-    
-    %change this to have K possible Robot goals instead and select them
-    %online later
-    if K>1
-        Robot_Goals = ones(K,K-1);
-        for k = 1:K
-            possible_collab_temp = possible_collab_lengths((k-1)*factorial(K-1)+1:k*factorial(K-1),:);
-            [min_val,idx] = min(possible_collab_temp(:));
-
-            idx = idx+ceil(idx/factorial(K-1))*(k-1)*factorial(K-1)+(ceil(idx/factorial(K-1))-1)*(K-k)*factorial(K-1);
-
-            [Sequence,Collab_point] = ind2sub(size(possible_collab_lengths),idx);
-            Robot_Goals(k,1:length(paths(Sequence,Collab_point+1:K))) = paths(Sequence,Collab_point+1:K);
-        end
-    else
-        Robot_Goals = 1;    
-    end
-
-    while(1)
-        if Capture_Flag == 0
-            ctrl_msg(1).Type = 2;
-            ctrl_msg(1).X = 0;
-            ctrl_msg(1).Y = 0;
-            ctrl_msg(1).Z = 0;
-            ctrl_msg(1).Yaw = 0;
-
-            %Just an example
-            Human(t+1,1) = (x_head-x_orig_ws)*10;
-            Human(t+1,2) = (y_head-y_orig_ws)*10;
-
-            %Cycle through each goal
-            for k = 1:K
-                P_a_sg(k,1) = exp(Beta.*(gamma.^(sqrt((Human(t+1,1)-goal(k,1)).^2+(Human(t+1,2)-goal(k,2)).^2))*R-c*((gamma-gamma.^(sqrt((Human(t+1,1)-goal(k,1)).^2+(Human(t+1,2)-goal(k,2)).^2)))/(1-gamma))));
-            end
-            %Human moves 1 unit towards goal
-
-            %Now Update Distribution
-    
-            P_g_s = P_a_sg.*P_g_s;
-            P_g_s = P_g_s./sum(P_g_s);
-         
-            
-            Robot_Goal_P = zeros(K,1);
-            for k = 1:K
-             %Robot_Goal_P(opt_path(k,K)) = Robot_Goal_P(opt_path(k,K))+P_g_s(k);
-                Robot_Goal_P(Robot_Goals(k,1)) = Robot_Goal_P(Robot_Goals(k,1))+P_g_s(K+1-k);
-            end
-            Robot_feas_zone = inf*ones(y_max-y_min+1,x_max-x_min+1);
-            
-            for x = 1:x_max-x_min+1
-                for y = 1:y_max-y_min+1
-                    if norm([x-Robot(t,1),y-Robot(t,2)])<= R_max
-                        Robot_feas_zone(y,x) = 1; 
-                    end
-                end
-            end
-          
-            Robot_opt_map = zeros(y_max-y_min+1,x_max-x_min+1);
-            normalizer = 0;
-         
-            for k = 1:K
-                Robot_opt_map = Robot_opt_map+(max(0,(-log(sqrt(((Robot(t,1)-goal(k,1)).^2+(Robot(t,2)-goal(k,2)).^2))./att_rad)))+Robot_Goal_P(k)).*sqrt((x_mesh-goal(k,1)).^2+(y_mesh-goal(k,2)).^2);
-                normalizer = normalizer+((x_mesh-goal(k,1)).^2+(y_mesh-goal(k,2)).^2);
-            end
-           
-            %Robot_opt_map = Robot_opt_map./normalizer;
-            Robot_opt_map = Robot_opt_map.*Robot_feas_zone;
-            [garbage,rob_dex] = min(Robot_opt_map(:));
-            [y_rob_dest,x_rob_dest] = ind2sub(size(Robot_opt_map),rob_dex);
-            %Propagate Robot State
-
-            SEND_DEST_X = (x_rob_dest/10);
-            SEND_DEST_Y = (y_rob_dest/10);
-            Time_save(t+1) = toc;
-            z_one(t+1) = z_1;
-            
-            P_z = arm_thresh-z_one(end);
-            D_z = diff(z_one(end-1:end))/diff(Time_save(end-1:end));
-            I_z = I_z+(arm_thresh-z_one(end))*diff(Time_save(end-1:end));
-
-            % PID Gains
-            %Works good for v_xy and v_z are both 1.0 in quadparameters.yaml
-            v_z_prefilt(t) = .1*P_z-.05*D_z+.0001*I_z;
-            print = [P_z D_z I_z];
-            if t<35
-                v_z = v_z_prefilt(end);
-            else
-                v_z = mean(v_z_prefilt(end-10:end));
-            end
-           
-            v_z_save(t) = v_z;
-
-
-
-            heading_vec = [SEND_DEST_X-x_1,SEND_DEST_Y-y_1]./norm([SEND_DEST_X-x_1,SEND_DEST_Y-y_1]);
-            v_x = vz_scale*heading_vec(1);
-            v_y = vz_scale*heading_vec(2);
-
-            Orient = quat2eul([qw_1 qx_1 qy_1 qz_1]);
-            Rot_Mat = [cos(Orient(2))*cos(Orient(1)),(sin(Orient(3))*sin(Orient(2))*cos(Orient(1))-cos(Orient(3))*sin(Orient(1))),(cos(Orient(3))*sin(Orient(2))*cos(Orient(1))+sin(Orient(3))*sin(Orient(1))); ...
-                 cos(Orient(2))*sin(Orient(1)),(sin(Orient(3))*sin(Orient(2))*sin(Orient(1))+cos(Orient(3))*cos(Orient(1))),(cos(Orient(3))*sin(Orient(2))*sin(Orient(1))-sin(Orient(3))*cos(Orient(1))); ...
-                 -sin(Orient(2)),(sin(Orient(3))*cos(Orient(2))),(cos(Orient(3))*cos(Orient(2)))];
-
-            Control_body = Rot_Mat\[v_x;v_y;v_z];
-            
-            ctrl_msg(1).X = vel_scale * Control_body(1);
-            ctrl_msg(1).Y = vel_scale * Control_body(2);
-            ctrl_msg(1).Z = vel_scale * Control_body(3);
-            send(ctrl_pub(1),ctrl_msg(1));  
-            % disp("#1 publishing here for quad 1 - coverage control - Hbirdb");
-
-            Robot(t+1,1) = x_1*10;
-            Robot(t+1,2) = y_1*10;
-            z_one(t+1) = z_1;
-            P_save(1:length(P_g_s),t) = P_g_s;
-
-
-            %Check capture of target and break infinite loop
-            if ((min(sqrt((Human(t,1)-goal(:,1)).^2+(Human(t,2)-goal(:,2)).^2)) < cap_tol) || (min(sqrt((Robot(t,1)-goal(:,1)).^2+(Robot(t,2)-goal(:,2)).^2))<cap_tol))
-                
-                if (min(sqrt((Human(t,1)-goal(:,1)).^2+(Human(t,2)-goal(:,2)).^2)) < cap_tol)
-                     
-                    [garbage,dex] = min(sqrt((Human(t,1)-goal(:,1)).^2+(Human(t,2)-goal(:,2)).^2));
-                    Capture_List = [Capture_List;goal(dex,:),1,t];
-                    goal(dex,:) = [];
-                    K = K-1;
-                   
-                    
-                end
-    
-                if min(sqrt((Robot(t,1)-goal(:,1)).^2+(Robot(t,2)-goal(:,2)).^2))<cap_tol
-                    
-                    [garbage,dex] = min(sqrt((Robot(t,1)-goal(:,1)).^2+(Robot(t,2)-goal(:,2)).^2));
-                    Capture_List = [Capture_List;goal(dex,:),2,t];
-                    goal(dex,:) = [];
-                    K = K-1;
-                    Capture_Time_Temp = clock;
-                    Capture_Time = Capture_Time_Temp(4)*3600+Capture_Time_Temp(5)*60+Capture_Time_Temp(6);
-                    Capture_Flag = 1;
-                    
-                end
-
-                clear dist_h_g P_g_s paths opt_dex opt_path P_a_sg possible_collab_lengths possible_collab_temp Robot_Goals
-                break
-            end
-
-        else
-            ctrl_msg(1).Type = 2;
-            ctrl_msg(1).X = 0;
-            ctrl_msg(1).Y = 0;
-            z_one(t+1) = z_1;
-            P_z = arm_thresh-z_one(end);
-            D_z = diff(z_one(end-1:end))/diff(Time_save(end-1:end));
-            I_z = I_z+(arm_thresh-z_one(end))*diff(Time_save(end-1:end));
-            
-            % PID Gains
-            %WORKS GOOD WHEN max v_xy and v_z are both 0.1 in qua1parameters.yaml
-            v_z_prefilt(t) = 5*P_z-4*D_z+.005*I_z;
-            % PID Gains
-            %Works good for v_xy and v_z are both 1.0 in quadparameters.yaml
-            v_z_prefilt(t) = .1*P_z-.05*D_z+.0001*I_z;
-            print = [P_z D_z I_z];
-
-            if t<35
-                v_z = v_z_prefilt(end);
-            else
-                v_z = mean(v_z_prefilt(end-10:end));
-            end
-        
-            v_z_save(t) = v_z;
-            ctrl_msg(1).Z = vel_scale * v_z;     
-
-            send(ctrl_pub(1),ctrl_msg(1));
-            % disp("#2 publishing here for quad 1 - coverage control - Hbirdb");
-            Capture_Time_Temp = clock;
-            
-            if Capture_Time_Temp(4)*3600+Capture_Time_Temp(5)*60+Capture_Time_Temp(6) > Capture_Time+30
-                Capture_Flag = 0;
-            end
-        end
-
-
-        %%%%%PUT COVERAGE CONTROL CODE HERE%%%%%
+while(1)
+   while(1)
+         %%%%%PUT COVERAGE CONTROL CODE HERE%%%%%
         t_count = t_count+1;
-
+        x_i(t_count) = (x_1 - x_orig)*10;
+        y_i(t_count) = (y_1 - y_orig)*10;
+        z_i(t_count) = (z_1 - z_orig)*10;
+        
         %Coverage Controllers
         x_mat = repmat(x_coord,length(y_coord),1,length(z_coord));
         y_mat = repmat(y_coord',1,length(x_coord),length(z_coord));
         z_mat = repmat(z_coord,length(y_coord),length(x_coord),1);
-
+        
 
         %%%%%%%%PLUS DX%%%%%%%%%%%
         x_i(t_count) = x_i(t_count)+dx;
@@ -691,9 +475,9 @@ while K>0
         yaw_i(1,t_count+1) = eul(1);
 
 
-        x_i(1,t_count+1) = x_1*10;
-        y_i(1,t_count+1) = y_1*10;
-        z_i(1,t_count+1) = z_1*10;
+        x_i(1,t_count+1) = (x_1 - x_orig)*10;
+        y_i(1,t_count+1) = (y_1 - y_orig)*10;
+        z_i(1,t_count+1) = (z_1 - z_orig)*10;
 
         if x_i(t_count+1)>max(x_coord)
             x_i(t_count+1) = max(x_coord);
@@ -720,8 +504,8 @@ while K>0
         vi(t_count) = K_v*ai2;
         wi(t_count) = K_w*ai3;
         qi(t_count) = 0;
-        ri(t_count) = K_r*ai4;
-        si(t_count) = K_s*ai5;
+        ri(t_count) = K_r*ai4; % pitch
+        si(t_count) = K_s*ai5; % yaw
 
 
         Rot_Mat = [cos(pitch_i(t_count))*cos(yaw_i(t_count)),(sin(roll_i(t_count))*sin(pitch_i(t_count))*cos(yaw_i(t_count))-cos(roll_i(t_count))*sin(yaw_i(t_count))),(cos(roll_i(t_count))*sin(pitch_i(t_count))*cos(yaw_i(t_count))+sin(roll_i(t_count))*sin(yaw_i(t_count))); ...
@@ -760,6 +544,7 @@ while K>0
             bound_vz = Rot_Mat\[0;0;U_max]; 
             bound_flag = 1;
         end
+       % if near boundary, send back         
        if bound_flag==1
            bound_vc = bound_vx+bound_vy+bound_vz;
            ui(t_count) = bound_vc(1);
@@ -772,28 +557,28 @@ while K>0
         %---------------- Come to daddy and hover near my head ---------------%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if z_right>arm_thresh && z_left<arm_thresh
-
-            dist_me = norm([x_head - (x_orig_ws + x_1) ,y_head- (y_orig_ws + y_1)]);
+            disp("come here");
+            dist_me = norm([(x_head-x_orig_ws) - (x_1 - x_orig) ,(y_head-y_orig_ws) - (y_1 - y_orig_ws)]);
            
-            if z_1<arm_thresh
+            if (z_1 - z_orig)< (z_head - z_orig_ws)*0.6
                v_z = vz_scale;
             else
                v_z = -vz_scale;
             end
 
             if dist_me<1
-                heading_vec = -[x_head - (x_orig_ws + x_1) ,y_head- (y_orig_ws + y_1)]./dist_me;
+                heading_vec = -[(x_head-x_orig_ws) - (x_1 - x_orig) ,(y_head-y_orig_ws) - (y_1 - y_orig_ws)]./dist_me;
                 v_x = vz_scale*heading_vec(1);
                 v_y = vz_scale*heading_vec(2);
             end
 
             if dist_me>1
-                heading_vec = [x_head - (x_orig_ws + x_1) ,y_head- (y_orig_ws + y_1)]./dist_me;
+                heading_vec = [(x_head-x_orig_ws) - (x_1 - x_orig) ,(y_head-y_orig_ws) - (y_1 - y_orig_ws)]./dist_me;
                 v_x = vz_scale*heading_vec(1);
                 v_y = vz_scale*heading_vec(2);
             end
 
-
+            fprintf("before transform: %f, %f, %f\n",v_x, v_y, v_z);
             Orient = quat2eul([qw_1 qx_1 qy_1 qz_1]);
             Rot_Mat = [cos(Orient(2))*cos(Orient(1)),(sin(Orient(3))*sin(Orient(2))*cos(Orient(1))-cos(Orient(3))*sin(Orient(1))),(cos(Orient(3))*sin(Orient(2))*cos(Orient(1))+sin(Orient(3))*sin(Orient(1))); ...
                      cos(Orient(2))*sin(Orient(1)),(sin(Orient(3))*sin(Orient(2))*sin(Orient(1))+cos(Orient(3))*cos(Orient(1))),(cos(Orient(3))*sin(Orient(2))*sin(Orient(1))-sin(Orient(3))*cos(Orient(1))); ...
@@ -810,21 +595,32 @@ while K>0
         %---------------- Follow the hand vector till position ---------------%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if z_left>arm_thresh
+            disp("follow vecotr");
             pos_rel_arm = [x_1-x_right-x_orig_ws; y_1-y_right-y_orig_ws; z_1-z_right-z_orig_ws];
             Orient_right = quat2eul([qw_right qx_right qy_right qz_right]);
             Rot_Mat_right = [cos(Orient_right(2))*cos(Orient_right(1)),(sin(Orient_right(3))*sin(Orient_right(2))*cos(Orient_right(1))-cos(Orient_right(3))*sin(Orient_right(1))),(cos(Orient_right(3))*sin(Orient_right(2))*cos(Orient_right(1))+sin(Orient_right(3))*sin(Orient_right(1))); ...
              cos(Orient_right(2))*sin(Orient_right(1)),(sin(Orient_right(3))*sin(Orient_right(2))*sin(Orient_right(1))+cos(Orient_right(3))*cos(Orient_right(1))),(cos(Orient_right(3))*sin(Orient_right(2))*sin(Orient_right(1))-sin(Orient_right(3))*cos(Orient_right(1))); ...
              -sin(Orient_right(2)),(sin(Orient_right(3))*cos(Orient_right(2))),(cos(Orient_right(3))*cos(Orient_right(2)))];
             pos_rel_arm = Rot_Mat_right\pos_rel_arm; %Now in the arm frame
+          
+            
             v_x = vz_scale;
             v_y = -vz_scale*pos_rel_arm(2);
             v_z = -vz_scale*pos_rel_arm(3);
             Back_to_room = Rot_Mat_right*[v_x;v_y;v_z];
 
+            fprintf("before transform: %f, %f, %f\n",v_x, v_y, v_z);
+            
             Orient = quat2eul([qw_1 qx_1 qy_1 qz_1]);
             Rot_Mat = [cos(Orient(2))*cos(Orient(1)),(sin(Orient(3))*sin(Orient(2))*cos(Orient(1))-cos(Orient(3))*sin(Orient(1))),(cos(Orient(3))*sin(Orient(2))*cos(Orient(1))+sin(Orient(3))*sin(Orient(1))); ...
              cos(Orient(2))*sin(Orient(1)),(sin(Orient(3))*sin(Orient(2))*sin(Orient(1))+cos(Orient(3))*cos(Orient(1))),(cos(Orient(3))*sin(Orient(2))*sin(Orient(1))-sin(Orient(3))*cos(Orient(1))); ...
              -sin(Orient(2)),(sin(Orient(3))*cos(Orient(2))),(cos(Orient(3))*cos(Orient(2)))];
+
+%             Add constraints to not hit into boundary        
+%             Back_to_room(1) = Back_to_room(1);
+%             Back_to_room(2) = Back_to_room(2);
+%             Back_to_room(3) = Back_to_room(3);
+            
             Control_body = Rot_Mat\Back_to_room;
             ui(t_count) = Control_body(1);
             vi(t_count) = Control_body(2);
@@ -839,10 +635,13 @@ while K>0
         ctrl_msg(1).X = vel_scale * ui(t_count);
         ctrl_msg(1).Y = vel_scale * vi(t_count);
         ctrl_msg(1).Z = vel_scale * wi(t_count);
+        % publishing pitch and yaw
         ctrl_msg(1).Yaw = yaw_scale * si(t_count);
+        ctrl_msg(1).VMaxZ = yaw_scale * ri(t_count);
+        
         send(ctrl_pub(1),ctrl_msg(1));  
-        % disp("#3 publishing here for quad 1 - coverage control - Hbirdb");
-
+        fprintf("%f, %f, %f \n",ctrl_msg(1).X, ctrl_msg(1).Y, ctrl_msg(1).Z);
+        
         %Propogate Coverage Level
         if t_count==1
             dttt = 0.1;
