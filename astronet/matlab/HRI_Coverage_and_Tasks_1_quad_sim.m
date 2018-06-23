@@ -90,8 +90,8 @@ arm_thresh = 1.5;
 
 % defining z-velocity(was set to 0.2 everywhere previously) and commanded linear/angular velocity scale
 vz_scale = 0.2;
-vel_scale = 0.5;
-yaw_scale = 0.5;
+vel_scale = 1;
+ang_scale = 0.5;
 
 fprintf("Gazebo Origin: (%f, %f, %f) | Workspace Origin: (%f, %f, %f)", x_orig, y_orig, z_orig, x_orig_ws, y_orig_ws, z_orig_ws);
 
@@ -636,8 +636,8 @@ while(1)
         ctrl_msg(1).Y = vel_scale * vi(t_count);
         ctrl_msg(1).Z = vel_scale * wi(t_count);
         % publishing pitch and yaw
-        ctrl_msg(1).Yaw = yaw_scale * si(t_count);
-        ctrl_msg(1).VMaxZ = yaw_scale * ri(t_count);
+        ctrl_msg(1).Yaw = ang_scale * si(t_count);
+        ctrl_msg(1).VMaxZ = ang_scale * ri(t_count);
         
         send(ctrl_pub(1),ctrl_msg(1));  
         fprintf("%f, %f, %f \n",ctrl_msg(1).X, ctrl_msg(1).Y, ctrl_msg(1).Z);

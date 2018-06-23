@@ -15,7 +15,7 @@ Publisher pub;
 Subscriber sub;
 ServiceClient client;
 
-void publish_hbirddg(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0, float yaw=0.0) {
+void publish_hbirddg(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0, float yaw=0.0, float pitch=0.0) {
 	gazebo_msgs::GetModelState modelstate;
 	modelstate.request.model_name = "hbirddg";
 	if(client.call(modelstate)){
@@ -34,7 +34,7 @@ void publish_hbirddg(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, flo
 		msg.twist.linear.y = y;
 		msg.twist.linear.z = z;
 		msg.twist.angular.x = 0;
-		msg.twist.angular.y = 0;
+		msg.twist.angular.y = pitch;
 		msg.twist.angular.z = yaw;
 
 		ROS_WARN("Publishing Calculated States for HbirdDG");
@@ -47,10 +47,10 @@ void publish_hbirddg(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, flo
 }
 
 void listener_hbirddg(const asctec_hl_comm::mav_ctrl &msg) {
-	ROS_WARN("HbirdDG:= x: %.2f, y: %.2f, z: %.2f, yaw: %.2f",msg.x, msg.y, msg.z, msg.yaw);
+	ROS_WARN("HbirdDG:= x: %.2f, y: %.2f, z: %.2f, yaw: %.2f, pitch: %.2f",msg.x, msg.y, msg.z, msg.yaw, msg.v_max_z);
 	gazebo_msgs::ModelState new_msg;
 	new_msg.model_name = "hbirddg";
-	publish_hbirddg(new_msg, msg.x, msg.y, msg.z, msg.yaw);
+	publish_hbirddg(new_msg, msg.x, msg.y, msg.z, msg.yaw, msg.v_max_z);
 }
 
 
