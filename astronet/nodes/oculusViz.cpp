@@ -9,6 +9,10 @@ stereocamera model and the image topic subscibed
 #include <gazebo_msgs/ModelState.h>
 #include <geometry_msgs/TransformStamped.h>
 #define frequency 10
+#define scaleX 0.5
+#define scaleY 0.5
+#define scaleZ 0.2
+#define scaleAng 1
 
 using namespace ros;
 
@@ -39,13 +43,13 @@ void publish_oculus(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, floa
 	}
 	// else publish every 5 frames to remove the jitter
 	else if(ctr%frequency == 0) {
-		msg.pose.position.x = oculus_x + (x-origin_x);
-		msg.pose.position.y = oculus_y + (y-origin_y);
-		msg.pose.position.z = oculus_z + (z-origin_z);
-		msg.pose.orientation.x = (qx - origin_qx);
-		msg.pose.orientation.y = (qy - origin_qy);
-		msg.pose.orientation.z = (qz - origin_qz);
-		msg.pose.orientation.w = (qw - origin_qw);
+		msg.pose.position.x = oculus_x + scaleX*(x-origin_x);
+		msg.pose.position.y = oculus_y + scaleY*(y-origin_y);
+		msg.pose.position.z = oculus_z + scaleZ*(z-origin_z);
+		msg.pose.orientation.x = scaleAng*(qx - origin_qx);
+		msg.pose.orientation.y = scaleAng*(qy - origin_qy);
+		msg.pose.orientation.z = scaleAng*(qz - origin_qz);
+		msg.pose.orientation.w = scaleAng*(qw - origin_qw);
 	}
 
 	ctr++;
@@ -81,5 +85,7 @@ int main(int argc, char **argv) {
 
 	client = nh.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state");
 
+	ROS_WARN("Running Oculus Visualization Node");
+	
 	spin();
 }
