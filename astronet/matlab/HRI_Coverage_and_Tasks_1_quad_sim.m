@@ -1,4 +1,4 @@
-rosshutdown, clear, clc;
+rosshutdown, clc;
 close all
 tic
 
@@ -69,9 +69,9 @@ gamma=0.55; %discount factor
 %-------------------- SIM ENVIRONMENT PARAMETERS ---------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-x_min = -10; x_max = 52;
-y_min = -8; y_max = 8;
-z_min = 40; z_max = 57;
+x_min = -8; x_max = 50;
+y_min = -4; y_max = 6;
+z_min = 43; z_max = 50;
 
 % Set origin for the simulator
 % to be subtracted from simulator data
@@ -91,35 +91,15 @@ arm_thresh = 1.5;
 % defining z-velocity(was set to 0.2 everywhere previously) and commanded linear/angular velocity scale
 vz_scale = 0.2;
 vel_scale = 1;
-ang_scale = 0.5;
+ang_scale = 1;
 
-fprintf("Gazebo Origin: (%f, %f, %f) | Workspace Origin: (%f, %f, %f)", x_orig, y_orig, z_orig, x_orig_ws, y_orig_ws, z_orig_ws);
+fprintf("Gazebo Origin: (%f, %f, %f)\nWorkspace Origin: (%f, %f, %f)", x_orig, y_orig, z_orig, x_orig_ws, y_orig_ws, z_orig_ws);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------- SIM ENVIRONMENT DIMS ------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [x_mesh,y_mesh] = meshgrid(1:x_max-x_min+1,1:y_max-y_min+1);
 t=1;
-
-%Place goals at random locations
-goal(1,1)=((x_max - x_min)*rand() + 1);
-goal(1,2)=((y_max - y_min)*rand() + 1);
-
-goal(2,1)=((x_max - x_min)*rand() + 1);
-goal(2,2)=((y_max - y_min)*rand() + 1);
-
-
-goal(2,1)=((x_max - x_min)*rand() + 1);
-goal(2,2)=((y_max - y_min)*rand() + 1);
-
-goal(3,1)=((x_max - x_min)*rand() + 1);
-goal(3,2)=((y_max - y_min)*rand() + 1);
-
-goal(4,1)=((x_max - x_min)*rand() + 1);
-goal(4,2)=((y_max - y_min)*rand() + 1);
-
-goal(5,1)=((x_max - x_min)*rand() + 1);
-goal(5,2)=((y_max - y_min)*rand() + 1);
 
 %Human Starting Location
 Human(t,1)=(x_head-x_orig_ws)*10;
@@ -146,12 +126,16 @@ D_z = 0; I_z = 0; P_z = 0;
 
 %Set up Coverage Parameters
 c_star = 1;
-K_u = .004; K_v = .004; K_w = .001; K_r = 4e-3; K_s = 4e-3; K_vel = 1;
+% K_u = .004; K_v = .004; K_w = .001; K_r = 4e-3; K_s = 4e-3; K_vel = 1;
+K_u = .05; K_v = .05; K_w = .05; K_r = 3e-3; K_s = 3e-3; K_vel = 1;
+% created variables which act as a 
+v_thresh = 1e-5;v_bias = 5e-3;
+
 U_max = .2; r_sat = 0.02; s_sat = 0.02;
 r_i = 3;
 r_part = 2;
 %Size of Sensor Footprint
-Ri = 10;
+Ri = 5;
 alphaa = (1/2)*90*pi/180;
 update_count = 0;
 orient_tol = .01;
@@ -555,6 +539,14 @@ while(1)
     %-------------------------- GESTURE CONTROL --------------------------%
     %---------------- Come to daddy and hover near my head ---------------%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % Calculate distances to all the walls         
+    dist_x_min = abs(x_1 - x_min); dist_x_max = abs(x_1 - x_max);
+    dist_y_min = abs(y_1 - y_min); dist_y_max = abs(y_1 - y_max);
+    dist_z_min = abs(z_1 - z_min); dist_z_max = abs(z_1 - z_max);
+    
+    dist_thresh = 1.5;
+    
     if z_right>arm_thresh && z_left<arm_thresh
         disp("come here");
         dist_me = norm([(x_head-x_orig_ws) - (x_1 - x_orig) ,(y_head-y_orig_ws) - (y_1 - y_orig_ws)]);
@@ -583,42 +575,34 @@ while(1)
                  cos(Orient(2))*sin(Orient(1)),(sin(Orient(3))*sin(Orient(2))*sin(Orient(1))+cos(Orient(3))*cos(Orient(1))),(cos(Orient(3))*sin(Orient(2))*sin(Orient(1))-sin(Orient(3))*cos(Orient(1))); ...
                  -sin(Orient(2)),(sin(Orient(3))*cos(Orient(2))),(cos(Orient(3))*cos(Orient(2)))];
         
-         % Calculate distances to all the walls         
-        dist_x_min = abs(x_1 - x_min);
-        dist_x_max = abs(x_1 - x_max);
-        dist_y_min = abs(y_1 - y_min);
-        dist_y_max = abs(y_1 - y_max);
-        dist_z_min = abs(z_1 - z_min);
-        dist_z_max = abs(z_1 - z_max);
-        
-        % put a threshold distance of 0.5m
-        dist_thresh = 1.5;
-        
+        %{
         % exponentially decrease the velocities based on distance from
         % the wall. We start decreasing at a distance of 1.5 and end by
         % the time the distance is 0.4 (hence the subtraction of 1.5)
         % as exp(0.4)~1.5, and we want to make the velocity 0 here on
         if dist_x_min<dist_thresh
-            v_x = exp(dist_x_min)-1.5;
+            v_x = v_x + exp(1/dist_x_min);
         end
         if dist_x_max<dist_thresh
-            v_x = exp(dist_x_max)-1.5;
+            v_x = v_x - exp(1/dist_x_max);
         end
         
         if dist_y_min<dist_thresh
-            v_y = exp(dist_y_min)-1.5;
+            v_y = v_y + exp(1/dist_y_min);
         end
         if dist_y_max<dist_thresh
-            v_y = exp(dist_y_max)-1.5;
+            v_y = v_y - exp(1/dist_y_max);
         end
         
         if dist_z_min<dist_thresh
-            v_z = exp(dist_z_min)-1.5;
+            v_z = v_z + exp(1/dist_z_min);
         end
         if dist_z_max<dist_thresh
-            v_z = exp(dist_z_max)-1.5;
-        end    
-             
+            v_z = v_z - exp(1/dist_z_max);
+        end
+
+        %}
+                 
         Control_body = Rot_Mat\[v_x;v_y;v_z];
         ui(t_count) = Control_body(1);
         vi(t_count) = Control_body(2);
@@ -655,42 +639,34 @@ while(1)
          cos(Orient(2))*sin(Orient(1)),(sin(Orient(3))*sin(Orient(2))*sin(Orient(1))+cos(Orient(3))*cos(Orient(1))),(cos(Orient(3))*sin(Orient(2))*sin(Orient(1))-sin(Orient(3))*cos(Orient(1))); ...
          -sin(Orient(2)),(sin(Orient(3))*cos(Orient(2))),(cos(Orient(3))*cos(Orient(2)))];
         
-        % Calculate distances to all the walls         
-        dist_x_min = abs(x_1 - x_min);
-        dist_x_max = abs(x_1 - x_max);
-        dist_y_min = abs(y_1 - y_min);
-        dist_y_max = abs(y_1 - y_max);
-        dist_z_min = abs(z_1 - z_min);
-        dist_z_max = abs(z_1 - z_max);
-        
-        % put a threshold distance of 0.5m
-        dist_thresh = 1.5;
-        
+        %{
         % exponentially decrease the velocities based on distance from
         % the wall. We start decreasing at a distance of 1.5 and end by
         % the time the distance is 0.4 (hence the subtraction of 1.5)
         % as exp(0.4)~1.5, and we want to make the velocity 0 here on
         if dist_x_min<dist_thresh
-            Back_to_room(1) = exp(dist_x_min)-1.5;
+            Back_to_room(1) = Back_to_room(1) + exp(1/dist_x_min);
         end
         if dist_x_max<dist_thresh
-            Back_to_room(1) = exp(dist_x_max)-1.5;
+            Back_to_room(1) = Back_to_room(1) - exp(1/dist_x_max);
         end
         
         if dist_y_min<dist_thresh
-            Back_to_room(2) = exp(dist_y_min)-1.5;
+            Back_to_room(2) = Back_to_room(2) + exp(1/dist_y_min);
         end
         if dist_y_max<dist_thresh
-            Back_to_room(2) = exp(dist_y_max)-1.5;
+            Back_to_room(2) = Back_to_room(2) - exp(1/dist_y_max);
         end
-        
+
         if dist_z_min<dist_thresh
-            Back_to_room(3) = exp(dist_z_min)-1.5;
+            Back_to_room(3) = Back_to_room(3) + exp(1/dist_z_min);
         end
         if dist_z_max<dist_thresh
-            Back_to_room(3) = exp(dist_z_max)-1.5;
-        end    
+            Back_to_room(3) = Back_to_room(3) - exp(1/dist_z_max);
+        end
 
+        %}
+        
         Control_body = Rot_Mat\Back_to_room;
         ui(t_count) = Control_body(1);
         vi(t_count) = Control_body(2);
@@ -708,9 +684,20 @@ while(1)
     % publishing pitch and yaw
     ctrl_msg(1).Yaw = ang_scale * si(t_count);
     ctrl_msg(1).VMaxZ = ang_scale * ri(t_count);
-
+    
+    if(abs(ctrl_msg(1).X)<v_thresh)
+        ctrl_msg(1).X = v_bias;
+    end
+    if(abs(ctrl_msg(1).Y)<v_thresh)
+        ctrl_msg(1).Y = v_bias;
+    end
+    if(abs(ctrl_msg(1).Z)<v_thresh)
+        ctrl_msg(1).Z = v_bias;
+    end
+    
+    
     send(ctrl_pub(1),ctrl_msg(1));  
-    fprintf("%f, %f, %f \n",ctrl_msg(1).X, ctrl_msg(1).Y, ctrl_msg(1).Z);
+    fprintf("Vel:(%f, %f, %f), Ang:(0, %f, %f)\n",ctrl_msg(1).X, ctrl_msg(1).Y, ctrl_msg(1).Z, ctrl_msg(1).VMaxZ, ctrl_msg(1).Yaw);
 
     %Propogate Coverage Level
     if t_count==1
