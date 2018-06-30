@@ -85,13 +85,19 @@ x_orig_ws = -1.2;
 y_orig_ws = -2.6;
 z_orig_ws = 0;
 
-% arm height threshold
-arm_thresh = 1.5;
+% thresholds
+arm_thresh = 1.5;   % arm height threshold
+dist_thresh = 0.3;  % distance threshold from wall to avoid clash
+v_thresh = 1e-5;    % threshold velocity below which bias velocity kicks in
+v_bias = 5e-3;      % bias velocity applied
 
 % defining z-velocity(was set to 0.2 everywhere previously) and commanded linear/angular velocity scale
 vz_scale = 0.2;
 vel_scale = 1;
 ang_scale = 1;
+
+% meshgrid dimensions for scatter plot
+dxx = 3; dyy = 1; dzz = 1;
 
 fprintf("Gazebo Origin: (%f, %f, %f)\nWorkspace Origin: (%f, %f, %f)", x_orig, y_orig, z_orig, x_orig_ws, y_orig_ws, z_orig_ws);
 
@@ -100,9 +106,6 @@ fprintf("Gazebo Origin: (%f, %f, %f)\nWorkspace Origin: (%f, %f, %f)", x_orig, y
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [x_mesh,y_mesh] = meshgrid(1:x_max-x_min+1,1:y_max-y_min+1);
 t=1;
-
-% meshgrid dimensions
-dxx = 3; dyy = 1; dzz = 1;
 
 %Human Starting Location
 Human(t,1)=(x_head-x_orig_ws)*10;
@@ -127,10 +130,9 @@ D_z = 0; I_z = 0; P_z = 0;
 
 %Set up Coverage Parameters
 c_star = 1;
-% K_u = .004; K_v = .004; K_w = .001; K_r = 4e-3; K_s = 4e-3; K_vel = 1;
+
+% simulation gains
 K_u = .05; K_v = .05; K_w = .05; K_r = 3e-3; K_s = 3e-3; K_vel = 1;
-% created variables which act as a momentum for pushing out of local optima
-v_thresh = 1e-5;v_bias = 5e-3;
 
 U_max = .2; r_sat = 0.02; s_sat = 0.02;
 r_i = 3;
@@ -140,8 +142,7 @@ Ri = 5;
 alphaa = (1/2)*90*pi/180;
 update_count = 0;
 orient_tol = .01;
-%New on 5/19/16
-Ep_star = .05; %Code Test Value
+Ep_star = .05;
 
  
 %set up coordinates
@@ -152,7 +153,6 @@ dt = 1;
 time = 0:dt:10000;
  
 t_count = 0;
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %---------------------- COORDINATE ENVIRONMENT SIM -------------------%
@@ -217,7 +217,6 @@ S_i = zeros(length(y_coord),length(x_coord),length(z_coord));
  
 %%Main Loop
 while(1)
-    z_right = 1; z_left = 1;
      %%%%%PUT COVERAGE CONTROL CODE HERE%%%%%
     t_count = t_count+1;
     x_i(t_count) = (x_1 - x_orig)*10;
@@ -547,8 +546,6 @@ while(1)
     dist_y_min = abs(y_1 - y_min); dist_y_max = abs(y_1 - y_max);
     dist_z_min = abs(z_1 - z_min); dist_z_max = abs(z_1 - z_max);
     
-    dist_thresh = 1.5;
-    
     if z_right>arm_thresh && z_left<arm_thresh
         disp("come here");
         dist_me = norm([(x_head-x_orig_ws) - (x_1 - x_orig) ,(y_head-y_orig_ws) - (y_1 - y_orig_ws)]);
@@ -570,42 +567,36 @@ while(1)
             v_x = vz_scale*heading_vec(1);
             v_y = vz_scale*heading_vec(2);
         end
-
-        fprintf("before transform: %f, %f, %f\n",v_x, v_y, v_z);
+        
         Orient = quat2eul([qw_1 qx_1 qy_1 qz_1]);
         Rot_Mat = [cos(Orient(2))*cos(Orient(1)),(sin(Orient(3))*sin(Orient(2))*cos(Orient(1))-cos(Orient(3))*sin(Orient(1))),(cos(Orient(3))*sin(Orient(2))*cos(Orient(1))+sin(Orient(3))*sin(Orient(1))); ...
                  cos(Orient(2))*sin(Orient(1)),(sin(Orient(3))*sin(Orient(2))*sin(Orient(1))+cos(Orient(3))*cos(Orient(1))),(cos(Orient(3))*sin(Orient(2))*sin(Orient(1))-sin(Orient(3))*cos(Orient(1))); ...
                  -sin(Orient(2)),(sin(Orient(3))*cos(Orient(2))),(cos(Orient(3))*cos(Orient(2)))];
+
+        Control_body = Rot_Mat\[v_x;v_y;v_z];
         
-        %{
-        % exponentially decrease the velocities based on distance from
-        % the wall. We start decreasing at a distance of 1.5 and end by
-        % the time the distance is 0.4 (hence the subtraction of 1.5)
-        % as exp(0.4)~1.5, and we want to make the velocity 0 here on
+        % add bias velocity if astrobee near the walls
         if dist_x_min<dist_thresh
-            v_x = v_x + exp(1/dist_x_min);
+            Control_body(1) = v_bias;
         end
         if dist_x_max<dist_thresh
-            v_x = v_x - exp(1/dist_x_max);
+            Control_body(1) = -v_bias;
         end
         
         if dist_y_min<dist_thresh
-            v_y = v_y + exp(1/dist_y_min);
+            Control_body(2) = v_bias;
         end
         if dist_y_max<dist_thresh
-            v_y = v_y - exp(1/dist_y_max);
+            Control_body(2) = -v_bias;
         end
         
         if dist_z_min<dist_thresh
-            v_z = v_z + exp(1/dist_z_min);
+            Control_body(3) = v_bias;
         end
         if dist_z_max<dist_thresh
-            v_z = v_z - exp(1/dist_z_max);
+            Control_body(3) = -v_bias;
         end
 
-        %}
-                 
-        Control_body = Rot_Mat\[v_x;v_y;v_z];
         ui(t_count) = Control_body(1);
         vi(t_count) = Control_body(2);
         wi(t_count) = Control_body(3);
@@ -628,48 +619,40 @@ while(1)
          -sin(Orient_right(2)),(sin(Orient_right(3))*cos(Orient_right(2))),(cos(Orient_right(3))*cos(Orient_right(2)))];
         pos_rel_arm = Rot_Mat_right\pos_rel_arm; %Now in the arm frame
 
-
         v_x = vz_scale;
         v_y = -vz_scale*pos_rel_arm(2);
         v_z = -vz_scale*pos_rel_arm(3);
         Back_to_room = Rot_Mat_right*[v_x;v_y;v_z];
 
-        fprintf("before transform: %f, %f, %f\n",v_x, v_y, v_z);
-
         Orient = quat2eul([qw_1 qx_1 qy_1 qz_1]);
         Rot_Mat = [cos(Orient(2))*cos(Orient(1)),(sin(Orient(3))*sin(Orient(2))*cos(Orient(1))-cos(Orient(3))*sin(Orient(1))),(cos(Orient(3))*sin(Orient(2))*cos(Orient(1))+sin(Orient(3))*sin(Orient(1))); ...
          cos(Orient(2))*sin(Orient(1)),(sin(Orient(3))*sin(Orient(2))*sin(Orient(1))+cos(Orient(3))*cos(Orient(1))),(cos(Orient(3))*sin(Orient(2))*sin(Orient(1))-sin(Orient(3))*cos(Orient(1))); ...
          -sin(Orient(2)),(sin(Orient(3))*cos(Orient(2))),(cos(Orient(3))*cos(Orient(2)))];
+    
+        Control_body = Rot_Mat\Back_to_room;
         
-        %{
-        % exponentially decrease the velocities based on distance from
-        % the wall. We start decreasing at a distance of 1.5 and end by
-        % the time the distance is 0.4 (hence the subtraction of 1.5)
-        % as exp(0.4)~1.5, and we want to make the velocity 0 here on
+        % add bias velocity if astrobee near the walls
         if dist_x_min<dist_thresh
-            Back_to_room(1) = Back_to_room(1) + exp(1/dist_x_min);
+            Control_body(1) = v_bias;
         end
         if dist_x_max<dist_thresh
-            Back_to_room(1) = Back_to_room(1) - exp(1/dist_x_max);
+            Control_body(1) = -v_bias;
         end
         
         if dist_y_min<dist_thresh
-            Back_to_room(2) = Back_to_room(2) + exp(1/dist_y_min);
+            Control_body(2) = v_bias;
         end
         if dist_y_max<dist_thresh
-            Back_to_room(2) = Back_to_room(2) - exp(1/dist_y_max);
+            Control_body(2) = -v_bias;
         end
-
+        
         if dist_z_min<dist_thresh
-            Back_to_room(3) = Back_to_room(3) + exp(1/dist_z_min);
+            Control_body(3) = v_bias;
         end
         if dist_z_max<dist_thresh
-            Back_to_room(3) = Back_to_room(3) - exp(1/dist_z_max);
+            Control_body(3) = -v_bias;
         end
-
-        %}
         
-        Control_body = Rot_Mat\Back_to_room;
         ui(t_count) = Control_body(1);
         vi(t_count) = Control_body(2);
         wi(t_count) = Control_body(3);
@@ -680,13 +663,17 @@ while(1)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     ctrl_msg(1).Type = 2;
+    
+    % publishing velocities
     ctrl_msg(1).X = vel_scale * ui(t_count);
     ctrl_msg(1).Y = vel_scale * vi(t_count);
     ctrl_msg(1).Z = vel_scale * wi(t_count);
+    
     % publishing pitch and yaw
     ctrl_msg(1).Yaw = ang_scale * si(t_count);
     ctrl_msg(1).VMaxZ = ang_scale * ri(t_count);
     
+    % add momentum if stuck in local minima
     if(abs(ctrl_msg(1).X)<v_thresh)
         ctrl_msg(1).X = v_bias;
     end
