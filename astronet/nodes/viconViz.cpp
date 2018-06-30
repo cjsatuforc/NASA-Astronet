@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
 	init(argc, argv, "viconViz");
 	NodeHandle nh;
 
-	sub_head = nh.subscribe("/vicon/William/William", 10000, &listener_head);
+	sub_head = nh.subscribe("/vicon/Oculus/Oculus", 10000, &listener_head);
 	sub_left = nh.subscribe("/vicon/Left_Arm/Left_Arm", 10000, &listener_left);
 	sub_right = nh.subscribe("/vicon/Right_Arm/Right_Arm", 10000, &listener_right);
 

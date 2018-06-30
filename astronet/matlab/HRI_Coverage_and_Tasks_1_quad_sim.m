@@ -22,8 +22,8 @@ global z_1 z_head z_left z_right;
 setenv('ROS_MASTER_URI', 'http://localhost:11311');
 rosinit('NodeName', '/matlab');
 
-quad_list = {'/hbirdbState' '/vicon/William/William' '/vicon/Left_Arm/Left_Arm' '/vicon/Right_Arm/Right_Arm'};
-viconCallback_list = {@viconCallback_hbirdb @viconCallback_William @viconCallback_Left_Arm @viconCallback_Right_Arm};
+quad_list = {'/hbirdbState' '/vicon/Oculus/Oculus' '/vicon/Left_Arm/Left_Arm' '/vicon/Right_Arm/Right_Arm'};
+viconCallback_list = {@viconCallback_hbirdb @viconCallback_Oculus @viconCallback_Left_Arm @viconCallback_Right_Arm};
 
 quad_num = 1;
 tic

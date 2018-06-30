@@ -9,8 +9,8 @@ stereocamera model and the image topic subscibed
 #include <gazebo_msgs/ModelState.h>
 #include <geometry_msgs/TransformStamped.h>
 #define frequency 10
-#define scaleX 0.5
-#define scaleY 0.5
+#define scaleX 1
+#define scaleY 1
 #define scaleZ 0.2
 #define scaleAng 1
 
@@ -41,17 +41,27 @@ void publish_oculus(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, floa
 		origin_qz = qz;
 		origin_qw = qw;
 	}
-	// else publish every 5 frames to remove the jitter
-	else if(ctr%frequency == 0) {
+	else if(ctr==60){
+		ROS_WARN("Starting tracking positions");
+	}
+	else{
 		msg.pose.position.x = oculus_x + scaleX*(x-origin_x);
 		msg.pose.position.y = oculus_y + scaleY*(y-origin_y);
 		msg.pose.position.z = oculus_z + scaleZ*(z-origin_z);
+		/*
 		msg.pose.orientation.x = scaleAng*(qx - origin_qx);
 		msg.pose.orientation.y = scaleAng*(qy - origin_qy);
 		msg.pose.orientation.z = scaleAng*(qz - origin_qz);
 		msg.pose.orientation.w = scaleAng*(qw - origin_qw);
+		*/
+		
+		msg.pose.orientation.x = 0;
+		msg.pose.orientation.y = 0;
+		msg.pose.orientation.z = 0;
+		msg.pose.orientation.w = 0;
+		
 	}
-
+	
 	ctr++;
 	
 	pub_oculus.publish(msg);
