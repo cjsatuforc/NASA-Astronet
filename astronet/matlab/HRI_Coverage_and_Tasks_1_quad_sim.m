@@ -101,11 +101,12 @@ fprintf("Gazebo Origin: (%f, %f, %f)\nWorkspace Origin: (%f, %f, %f)", x_orig, y
 [x_mesh,y_mesh] = meshgrid(1:x_max-x_min+1,1:y_max-y_min+1);
 t=1;
 
+% meshgrid dimensions
+dxx = 3; dyy = 1; dzz = 1;
+
 %Human Starting Location
 Human(t,1)=(x_head-x_orig_ws)*10;
 Human(t,2)=(y_head-y_orig_ws)*10;
-
-disp("Goal positions set are:");
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------- NORMALIZE POSITIONS -------------------------%
@@ -128,7 +129,7 @@ D_z = 0; I_z = 0; P_z = 0;
 c_star = 1;
 % K_u = .004; K_v = .004; K_w = .001; K_r = 4e-3; K_s = 4e-3; K_vel = 1;
 K_u = .05; K_v = .05; K_w = .05; K_r = 3e-3; K_s = 3e-3; K_vel = 1;
-% created variables which act as a 
+% created variables which act as a momentum for pushing out of local optima
 v_thresh = 1e-5;v_bias = 5e-3;
 
 U_max = .2; r_sat = 0.02; s_sat = 0.02;
@@ -216,6 +217,7 @@ S_i = zeros(length(y_coord),length(x_coord),length(z_coord));
  
 %%Main Loop
 while(1)
+    z_right = 1; z_left = 1;
      %%%%%PUT COVERAGE CONTROL CODE HERE%%%%%
     t_count = t_count+1;
     x_i(t_count) = (x_1 - x_orig)*10;
@@ -729,8 +731,8 @@ while(1)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if t_count==1
         coverror_init = trapz(trapz(trapz(max(0,c_star).^3)))*dx*dy*dz;
-        [xx,yy,zz] = meshgrid(x_min:3:x_max,y_min:3:y_max,z_min:3:z_max);
-        temp = max(0,c_star-Q(1:3:y_max-y_min+1,1:3:x_max-x_min+1,1:3:z_max-z_min+1));
+        [xx,yy,zz] = meshgrid(x_min:dxx:x_max,y_min:dyy:y_max,z_min:dzz:z_max);
+        temp = max(0,c_star-Q(1:dyy:y_max-y_min+1,1:dxx:x_max-x_min+1,1:dzz:z_max-z_min+1));
         tempp = temp(:);
         h = scatter3(xx(:),yy(:),zz(:),1,tempp,'linewidth',10);
         h.CDataSource = 'tempp';
@@ -745,7 +747,7 @@ while(1)
         alpha(0.1);
     end
 
-    temp = max(0,c_star-Q(1:3:y_max-y_min+1,1:3:x_max-x_min+1,1:3:z_max-z_min+1));  
+    temp = max(0,c_star-Q(1:dyy:y_max-y_min+1,1:dxx:x_max-x_min+1,1:dzz:z_max-z_min+1));  
     tempp = temp(:);
     refreshdata(h)
     coverror(t_count) = trapz(trapz(trapz(max(0,c_star-Q(:,:,:)).^3)))*dx*dy*dz;
