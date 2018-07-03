@@ -388,10 +388,10 @@
         <pose frame=''>-3.75 0 5.25 0 -0 0</pose>
       </model>   
       <model name='left'>
-        <pose frame=''>-3.25 0.25 5 0 -0 0</pose>
+        <pose frame=''>-3.73 0.25 5 0 -0 0</pose>
       </model>
       <model name='right'>
-        <pose frame=''>-3.25 -0.25 5 0 -0 0</pose>
+        <pose frame=''>-3.73 -0.25 5 0 -0 0</pose>
       </model>
       <model name='torso'>
         <pose frame=''>-3.75 0 4.75 0 -0 0</pose>
