@@ -16,9 +16,9 @@ towards +y, the gazebo model moves towards +y.
 
 #define scaleX 0.7
 #define scaleY 1
-#define scaleZ 0.7
+#define scaleZ 1
 #define shoulderHeight 1.75
-#define counterToStart 300
+#define counterToStart 1000
 
 using namespace ros;
 
@@ -39,8 +39,8 @@ ServiceClient client;
 // declare initial values for the states of each model
 float head_x = -3.75, head_y = 0, head_z = 5.25;
 float torso_x = -3.75, torso_y = 0, torso_z = 4.75;
-float left_x = -3.25, left_y = 0.25, left_z = 5;
-float right_x = -3.25, right_y = -0.25, right_z = 5;
+float left_x = -3.73, left_y = 0.25, left_z = 5;
+float right_x = -3.73, right_y = -0.25, right_z = 5;
 
 float origin_x, origin_y, origin_z;
 float origin_qx, origin_qy, origin_qz, origin_qw;
@@ -88,20 +88,24 @@ void publish_torso(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float
 
 
 void publish_left(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0) {
-	// preserve position and orientation
-	msg.pose.position.x = left_x + scaleX*x;
-	msg.pose.position.y = left_y + scaleY*y;
-	msg.pose.position.z = left_z + scaleZ*(z - shoulderHeight);
-	pub_left.publish(msg);
+	if (ctr>counterToStart) {
+		// preserve position and orientation
+		msg.pose.position.x = left_x + scaleX*(x-origin_x);
+		msg.pose.position.y = left_y + scaleY*(y-origin_y);
+		msg.pose.position.z = left_z + scaleZ*(z-origin_z);
+		pub_left.publish(msg);
+	}
 }
 
 
 void publish_right(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0) {
-	// preserve position and orientation
-	msg.pose.position.x = right_x + scaleX*x;
-	msg.pose.position.y = right_y + scaleY*y;
-	msg.pose.position.z = right_z + scaleZ*(z - shoulderHeight);
-	pub_right.publish(msg);
+	if (ctr>counterToStart) {
+		// preserve position and orientation
+		msg.pose.position.x = right_x + scaleX*(x-origin_x);
+		msg.pose.position.y = right_y + scaleY*(y-origin_y);
+		msg.pose.position.z = right_z + scaleZ*(z-origin_z);
+		pub_right.publish(msg);
+	}
 }
 
 
@@ -149,8 +153,7 @@ int main(int argc, char **argv) {
 	init(argc, argv, "viconViz");
 	NodeHandle nh;
 
-	// sub_head = nh.subscribe("/vicon/Oculus/Oculus", 10000, &listener_head);
-	sub_head = nh.subscribe("/vicon/William/William", 10000, &listener_head);
+	sub_head = nh.subscribe("/vicon/Oculus/Oculus", 10000, &listener_head);
 	sub_left = nh.subscribe("/vicon/Left_Arm/Left_Arm", 10000, &listener_left);
 	sub_right = nh.subscribe("/vicon/Right_Arm/Right_Arm", 10000, &listener_right);
 

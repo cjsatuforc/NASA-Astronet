@@ -81,13 +81,13 @@ z_orig = (z_min)/10;
 
 % Set origin for the actual physical workspace
 % to be subtracted from vicon data
-x_orig_ws = -1.2;
-y_orig_ws = -2.6;
+x_orig_ws = 0;
+y_orig_ws = 0;
 z_orig_ws = 0;
 
 % thresholds
-arm_thresh = 1.5;   % arm height threshold
-dist_thresh = 0.3;  % distance threshold from wall to avoid clash
+arm_thresh = 1.3;   % arm height threshold
+dist_thresh = 0.05;  % distance threshold from wall to avoid clash
 v_thresh = 1e-5;    % threshold velocity below which bias velocity kicks in
 v_bias = 5e-3;      % bias velocity applied
 
@@ -151,7 +151,7 @@ dx = 1; dy = 1; dz = 1; droll = .05; dpitch = dx/Ri; dyaw = dx/Ri;
 %set(gcf,'visible','off')
 dt = 1;
 time = 0:dt:10000;
- 
+
 t_count = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -542,18 +542,21 @@ while(1)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Calculate distances to all the walls         
-    dist_x_min = abs(x_1 - x_min); dist_x_max = abs(x_1 - x_max);
-    dist_y_min = abs(y_1 - y_min); dist_y_max = abs(y_1 - y_max);
-    dist_z_min = abs(z_1 - z_min); dist_z_max = abs(z_1 - z_max);
-    
+    dist_x_min = abs(x_1 - x_min/10); dist_x_max = abs(x_1 - x_max/10);
+    dist_y_min = abs(y_1 - y_min/10); dist_y_max = abs(y_1 - y_max/10);
+    dist_z_min = abs(z_1 - z_min/10); dist_z_max = abs(z_1 - z_max/10);
+        
     if z_right>arm_thresh && z_left<arm_thresh
         disp("come here");
+        % fprintf("Wall Distances: min - (%f,%f,%f) | max - (%f,%f,%f)\n", ...
+        % dist_x_min, dist_y_min, dist_z_min, dist_x_max, dist_y_max, dist_z_max);
+
         dist_me = norm([(x_head-x_orig_ws) - (x_1 - x_orig) ,(y_head-y_orig_ws) - (y_1 - y_orig_ws)]);
 
         if (z_1 - z_orig)< (z_head - z_orig_ws)*0.6
-           v_z = vz_scale;
+           v_z = 0.1;
         else
-           v_z = -vz_scale;
+           v_z = -0.1;
         end
 
         if dist_me<1
@@ -577,26 +580,32 @@ while(1)
         
         % add bias velocity if astrobee near the walls
         if dist_x_min<dist_thresh
-            Control_body(1) = v_bias;
+            Control_body(1) = (exp(abs(dist_thresh-dist_x_min))-1);
+            fprintf("min_x: %f, v: %f\n",dist_x_min, Control_body(1));
         end
         if dist_x_max<dist_thresh
-            Control_body(1) = -v_bias;
+            Control_body(1) = -(exp(abs(dist_thresh-dist_x_max))-1);
+            fprintf("max_x: %f, v: %f\n",dist_x_max, Control_body(1));
         end
         
         if dist_y_min<dist_thresh
-            Control_body(2) = v_bias;
+            Control_body(2) = (exp(abs(dist_thresh-dist_y_min))-1);
+            fprintf("min_y: %f, v: %f\n",dist_y_min, Control_body(2));
         end
         if dist_y_max<dist_thresh
-            Control_body(2) = -v_bias;
+            Control_body(2) = -(exp(abs(dist_thresh-dist_y_max))-1);
+            fprintf("max_y: %f, v: %f\n",dist_y_max, Control_body(2));
         end
         
         if dist_z_min<dist_thresh
-            Control_body(3) = v_bias;
+            Control_body(3) = (exp(abs(dist_thresh-dist_z_min))-1);
+            fprintf("min_z: %f, v: %f\n",dist_z_min, Control_body(3));
         end
         if dist_z_max<dist_thresh
-            Control_body(3) = -v_bias;
+            Control_body(3) = -(exp(abs(dist_thresh-dist_z_max))-1);
+            fprintf("max_z: %f, v: %f\n",dist_z_max, Control_body(3));
         end
-
+        
         ui(t_count) = Control_body(1);
         vi(t_count) = Control_body(2);
         wi(t_count) = Control_body(3);
@@ -608,7 +617,9 @@ while(1)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if z_left>arm_thresh
         disp("follow vector");
-        
+        % fprintf("Wall Distances: min - (%f,%f,%f) | max - (%f,%f,%f)\n", ...
+        % dist_x_min, dist_y_min, dist_z_min, dist_x_max, dist_y_max, dist_z_max);
+    
         pos_rel_arm = [(x_1 - x_orig) - (x_right - x_orig_ws);...
                        (y_1 - y_orig) - (y_right - y_orig_ws);...
                        (z_1 - z_orig) - (z_right - z_orig_ws)];
@@ -633,26 +644,32 @@ while(1)
         
         % add bias velocity if astrobee near the walls
         if dist_x_min<dist_thresh
-            Control_body(1) = v_bias;
+            Control_body(1) = (exp(abs(dist_thresh-dist_x_min))-1);
+            fprintf("min_x: %f, v: %f\n",dist_x_min, Control_body(1));
         end
         if dist_x_max<dist_thresh
-            Control_body(1) = -v_bias;
+            Control_body(1) = -(exp(abs(dist_thresh-dist_x_max))-1);
+            fprintf("max_x: %f, v: %f\n",dist_x_max, Control_body(1));
         end
         
         if dist_y_min<dist_thresh
-            Control_body(2) = v_bias;
+            Control_body(2) = (exp(abs(dist_thresh-dist_y_min))-1);
+            fprintf("min_y: %f, v: %f\n",dist_y_min, Control_body(2));
         end
         if dist_y_max<dist_thresh
-            Control_body(2) = -v_bias;
+            Control_body(2) = -(exp(abs(dist_thresh-dist_y_max))-1);
+            fprintf("max_y: %f, v: %f\n",dist_y_max, Control_body(2));
         end
         
         if dist_z_min<dist_thresh
-            Control_body(3) = v_bias;
+            Control_body(3) = (exp(abs(dist_thresh-dist_z_min))-1);
+            fprintf("min_z: %f, v: %f\n",dist_z_min, Control_body(3));
         end
         if dist_z_max<dist_thresh
-            Control_body(3) = -v_bias;
+            Control_body(3) = -(exp(abs(dist_thresh-dist_z_max))-1);
+            fprintf("max_z: %f, v: %f\n",dist_z_max, Control_body(3));
         end
-        
+
         ui(t_count) = Control_body(1);
         vi(t_count) = Control_body(2);
         wi(t_count) = Control_body(3);
@@ -732,6 +749,7 @@ while(1)
         ylabel('y')
         zlabel('z')
         alpha(0.1);
+        axis equal;
     end
 
     temp = max(0,c_star-Q(1:dyy:y_max-y_min+1,1:dxx:x_max-x_min+1,1:dzz:z_max-z_min+1));  
