@@ -29,32 +29,3 @@ popd
 pushd $BUILD_PATH
 make -j6
 popd
-
-# Add to bashrc file
-echo "source ~/Documents/Astrobee/Freeflyer_build/devel/setup.bash" >> ~/.bashrc
-
-
-# Make Astronet Simulator Workspace
-mkdir -p ~/Documents/Astronet/src
-cd ~/Documents/Astronet/src
-catkin_init_workspace
-cd ..
-catkin_make
-
-# Build base dependency libraries
-cd src/
-git clone https://github.com/ethz-asl/vicon_bridge.git
-git clone https://github.com/ethz-asl/glog_catkin.git
-git clone https://github.com/catkin/catkin_simple.git
-git clone https://github.com/ethz-asl/mav_comm.git
-cd mav_comm
-sudo mv -r * ../
-cd ../..
-catkin_make
-
-# Build framework libraries
-cd src/
-git clone https://github.com/ethz-asl/asctec_mav_framework.git
-git clone https://github.com/ethz-asl/ethzasl_msf.git
-cd ../..
-catkin_make
