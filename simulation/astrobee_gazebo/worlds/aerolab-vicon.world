@@ -20,7 +20,7 @@
     <!-- Add scene camera -->
     <gui fullscreen='0'>
       <camera name='user_camera_1'>
-        <pose frame=''>-4.08249 8.45773 7.42872 0 0.28 -1.06601</pose>
+        <pose frame=''>-5.1565 5.39022 6.56979 -0 0.244 -0.770014</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -102,26 +102,6 @@
             <izz>0.166667</izz>
           </inertia>
         </inertial>
-<!--         <collision name='collision'>
-          <geometry>
-            <box>
-              <size>0.3 0.3 0.3</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision> -->
         <visual name='visual'>
           <geometry>
             <box>
@@ -129,8 +109,8 @@
             </box>
           </geometry>
           <material>
-            <ambient>52 61 70 0.8</ambient>
-            <diffuse>52 61 70 0.8</diffuse>
+            <ambient>0 0 0.3 1</ambient>
+            <diffuse>0 0 0.3 1</diffuse>
             <specular>0.1 0.1 0.1 1</specular>
             <emissive>0 0 0 0</emissive>
           </material>
@@ -144,7 +124,7 @@
             <horizontal_fov>1.047</horizontal_fov>
             <image>
               <width>320</width>
-              <height>240</height>
+              <height>320</height>
             </image>
             <clip>
               <near>0.1</near>
@@ -156,7 +136,7 @@
             <horizontal_fov>1.047</horizontal_fov>
             <image>
               <width>320</width>
-              <height>240</height>
+              <height>320</height>
             </image>
             <clip>
               <near>0.1</near>
@@ -182,27 +162,6 @@
             <izz>0.125</izz>
           </inertia>
         </inertial>
-<!--         <collision name='collision'>
-          <geometry>
-            <cylinder>
-              <radius>0.175</radius>
-              <length>0.5</length>
-            </cylinder>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision> -->
         <visual name='visual'>
           <geometry>
             <cylinder>
@@ -211,8 +170,8 @@
             </cylinder>
           </geometry>
           <material>
-            <ambient>192 197 206 0.8</ambient>
-            <diffuse>192 197 206 0.8</diffuse>
+            <ambient>65 74 76 1</ambient>
+            <diffuse>65 74 76 1</diffuse>
             <specular>0.1 0.1 0.1 1</specular>
             <emissive>0 0 0 0</emissive>
           </material>
@@ -235,26 +194,6 @@
             <izz>0.1</izz>
           </inertia>
         </inertial>
-<!--         <collision name='collision'>
-          <geometry>
-            <sphere>
-              <radius>0.15</radius>
-            </sphere>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision> -->
         <visual name='visual'>
           <geometry>
             <sphere>
@@ -262,8 +201,8 @@
             </sphere>
           </geometry>
           <material>
-            <ambient>0 1 0 0.7</ambient>
-            <diffuse>0 1 0 0.7</diffuse>
+            <ambient>0 1 0 1</ambient>
+            <diffuse>0 1 0 1</diffuse>
             <specular>0.1 0.1 0.1 1</specular>
             <emissive>0 0 0 0</emissive>
           </material>
@@ -286,26 +225,6 @@
             <izz>0.1</izz>
           </inertia>
         </inertial>
-<!--         <collision name='collision'>
-          <geometry>
-            <sphere>
-              <radius>0.15</radius>
-            </sphere>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision> -->
         <visual name='visual'>
           <geometry>
             <sphere>
@@ -313,8 +232,8 @@
             </sphere>
           </geometry>
           <material>
-            <ambient>1 0 0 0.7</ambient>
-            <diffuse>1 0 0 0.7</diffuse>
+            <ambient>1 0 0 1</ambient>
+            <diffuse>1 0 0 1</diffuse>
             <specular>0.1 0.1 0.1 1</specular>
             <emissive>0 0 0 0</emissive>
           </material>
@@ -385,16 +304,16 @@
         <pose frame=''>8.46712 -3.4 4.85 -1.5708 0 0</pose>
       </model>
       <model name='head'>
-        <pose frame=''>-3.75 0 5.25 0 -0 0</pose>
+        <pose frame=''>-0.75 0 5.25 0 -0 0</pose>
       </model>   
       <model name='left'>
-        <pose frame=''>-3.73 0.25 5 0 -0 0</pose>
+        <pose frame=''>-0.73 0.25 5 0 -0 0</pose>
       </model>
       <model name='right'>
-        <pose frame=''>-3.73 -0.25 5 0 -0 0</pose>
+        <pose frame=''>-0.73 -0.25 5 0 -0 0</pose>
       </model>
       <model name='torso'>
-        <pose frame=''>-3.75 0 4.75 0 -0 0</pose>
+        <pose frame=''>-0.75 0 4.75 0 -0 0</pose>
       </model>
 
 
