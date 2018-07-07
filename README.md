@@ -2,18 +2,18 @@
 The [AstroNet](https://www.nasa.gov/directorates/spacetech/strg/ecf2016/AstroNet.html) Simulator is developed as an extension to NASA's Astrobee simulator, where control schemes, task allocation paradigms and navigation algorithms for each of the Astrobee Robots are developed. ROS Kinetic is used for simulating the algorithms, and to interface with the quadcopters (representing astrobee robots in our environment). An interactive VR-based environment of the whole International Space Station, with the robots in it, has been implemented and can be visualized on the [Oculus Rift](https://www.oculus.com/rift/).
 
 ## Building Instructions
-Run ```install_astrobee.sh``` in a terminal. The software repositories are contained within Documents/Astrobee and Documents/Astronet folders.
+Run ```install_astrobee.sh``` in a terminal. The software repositories are contained within Documents/Astrobee folder. You can change the installation location by editing the aforementioned install script. You may face an issue while building if you have multiple installations of gtest installed as the install script adds it. Make sure to check if it is installed before hand.
 
-Goto the CMakeLists.txt of msf_timing and msf_core and add the path to the gtest library if it creates an error while compiling as follows:
-```xml
-set(GTEST_ROOT "/usr/src/gtest" CACHE PATH "Path to googletest")
-find_package(GTest REQUIRED)
-if(NOT GTEST_LIBRARY)
-   message("not found")
-endif()
-```
+## Framework Requirements
+The Astrobee Package runs on NASA's proprietary robot. The Astronet package written, however, uses the [Asctec HummingBird](http://www.asctec.de/en/uav-uas-drones-rpas-roav/asctec-hummingbird/) for testing the framework. The [Vicon Motion Capture](https://www.vicon.com/) system is used for input gestures, and the Oculus Rift is used to walk around and interact with the immersive environment. You would also require the [MATLAB Robotics Systems Toolbox](https://www.mathworks.com/products/robotics.html) to run the coverage software. This provides us with the ability for fast prototyping of coverage code and running it along with ROS on a computer.
 
-
+## Running the Software
+To run NASAs base astrobee simulator, you may run the following ```roslaunch astrobee sim.launch dds:=false robot:=sim_pub rviz:=true```.
+If you would like to run the Astronet Simulator, you may follow these steps:
+1. Open a terminal and run ```roscore```
+2. Open a second terminal and run the Vicon Subscription Software ```roslaunch vicon_bridge vicon.launch```. You may need to change the ```datastream_hostport``` to run receive the messages. The current IP is ```192.168.1.3:801```. We have created 3 Vicon Objects to track the motion of the user, namely: (i) Left_Arm, (ii) Right_Arm, and (iii) Oculus. Make sure to initialize these objects.
+3. Open a third terminal and run the main astronet package as follows: ```roslaunch astrobee astronet.launch```
+4. Now open MATLAB and run ```HRI_Coverage_and_Tasks_1_quad_sim.m``` which launches the coverage and gesture recognition code for you. 
 
 ## Astrobee Robot Software - Flight Software repository
 

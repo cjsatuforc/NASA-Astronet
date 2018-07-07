@@ -1,54 +1,12 @@
-# BUILD INSTRUCTIONS :
+# BUILD DEPENDENCIES :
+List of all the dependent repositories required to use the Astronet Package. All these are installed using ```install_astrobee.sh```.
 
-1. Make the Workspace as follows
+1. The dependencies used are cloned from the following repositories
+* [Vicon System](https://github.com/ethz-asl/vicon_bridge.git)
+* [Catkin Glog](https://github.com/ethz-asl/glog_catkin.git)
+* [Catkin Simple](https://github.com/catkin/catkin_simple.git)
+* [Messages used for ASCTEC Hummingbird](https://github.com/ethz-asl/mav_comm.git)
+* [ETH Zurich MSF Libraries](https://github.com/ethz-asl/ethzasl_msf.git)
+* [Communication Framework for ASCTEC Hummingbirds](https://github.com/ethz-asl/asctec_mav_framework.git)
 
-```bash
-mkdir -p ~/Documents/catkin_ws/src
-cd ~/Documents/catkin_ws/src
-catkin_init_workspace
-cd ..
-catkin_make
-```
-
-2. Clone Base Repositories in src folder
-```bash
-cd src/
-git clone https://github.com/ethz-asl/vicon_bridge.git
-git clone https://github.com/ethz-asl/glog_catkin.git
-git clone https://github.com/catkin/catkin_simple.git
-```
-
-3. Clone the message repo and move it to the main src folder
-```bash
-git clone https://github.com/ethz-asl/mav_comm.git
-cd mav_comm
-sudo mv -r * ../
-```
-
-4. Make the Base Target Libraries
-```bash
-cd ../..
-catkin_make
-```
-
-5. Once made, add the main framework libraries
-```bash
-cd src/
-git clone https://github.com/ethz-asl/asctec_mav_framework.git
-git clone https://github.com/ethz-asl/ethzasl_msf.git
-```
-
-6. Now goto the CMakeLists.txt of msf_timing and msf_core and add the path to the gtest library if it creates an error while compiling
-```bash
-# Add the path to gtest:
-set(GTEST_ROOT "/usr/src/gtest" CACHE PATH "Path to googletest")
-find_package(GTest REQUIRED)
-if(NOT GTEST_LIBRARY)
-   message("not found")
-endif()
-```
-
-7. Finally make again
-```bash
-catkin_make
-```
+Make sure to have the gtest library installed else the MSF framework creates issues while building. The install script does it for you automatically. However, if you face issues, you can follow [this](https://www.eriksmistad.no/getting-started-with-google-test-on-ubuntu/) tutorial to install it.
