@@ -124,7 +124,7 @@
             <horizontal_fov>1.047</horizontal_fov>
             <image>
               <width>320</width>
-              <height>320</height>
+              <height>240</height>
             </image>
             <clip>
               <near>0.1</near>
@@ -136,7 +136,7 @@
             <horizontal_fov>1.047</horizontal_fov>
             <image>
               <width>320</width>
-              <height>320</height>
+              <height>240</height>
             </image>
             <clip>
               <near>0.1</near>
