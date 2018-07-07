@@ -9,11 +9,15 @@ The Astrobee Package runs on NASA's proprietary robot. The Astronet package writ
 
 ## Running the Software
 To run NASAs base astrobee simulator, you may run the following ```roslaunch astrobee sim.launch dds:=false robot:=sim_pub rviz:=true```.
+
+<img src="doc/images/sim.png" srcset="../images/sim.png 1x" title="Astronet Simulator" align="right" style="display: block"/>
+
 If you would like to run the Astronet Simulator, you may follow these steps:
 1. Open a terminal and run ```roscore```
 2. Open a second terminal and run the Vicon Subscription Software ```roslaunch vicon_bridge vicon.launch```. You may need to change the ```datastream_hostport``` to run receive the messages. The current IP is ```192.168.1.3:801```. We have created 3 Vicon Objects to track the motion of the user, namely: (i) Left_Arm, (ii) Right_Arm, and (iii) Oculus. Make sure to initialize these objects.
 3. Open a third terminal and run the main astronet package as follows: ```roslaunch astrobee astronet.launch```
 4. Now open MATLAB and run ```HRI_Coverage_and_Tasks_1_quad_sim.m``` which launches the coverage and gesture recognition code for you. 
+
 
 ## Astrobee Robot Software - Flight Software repository
 
