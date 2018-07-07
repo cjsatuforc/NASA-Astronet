@@ -1,8 +1,14 @@
+###########################################
+# Compile and Build Astrobee Base Libraries
+###########################################
+
 # export paths
-export SOURCE_PATH=$HOME/Documents/Astrobee/Freeflyer
+export SOURCE_PATH=$HOME/Documents/Astrobee/Astrobee
 export ANDROID_PATH="${SOURCE_PATH}_android"
-export BUILD_PATH=$HOME/Documents/Astrobee/Freeflyer_build
-export INSTALL_PATH=$HOME/Documents/Astrobee/Freeflyer_install
+export BUILD_PATH=$HOME/Documents/Astrobee/Astrobee_build
+export INSTALL_PATH=$HOME/Documents/Astrobee/Astrobee_install
+export ASTRONET_PATH=$HOME/Documents/Astrobee/Astronet
+export DEPEND_PATH=$HOME/Documents/Astrobee/Dependencies
 
 # clone repos
 git clone https://github.com/sahibdhanjal/NASA-Astronet.git $SOURCE_PATH
@@ -29,3 +35,55 @@ popd
 pushd $BUILD_PATH
 make -j6
 popd
+
+###########################################
+# Build Dependencies
+###########################################
+# install gtest 
+sudo apt-get install libgtest-dev
+sudo apt-get install cmake
+cd /usr/src/gtest
+sudo cmake CMakeLists.txt
+sudo make
+sudo cp *.a /usr/lib
+
+# build dependencies
+mkdir -p $DEPEND_PATH/src
+cd $DEPEND_PATH/src
+git clone https://github.com/ethz-asl/vicon_bridge.git
+cd $DEPEND_PATH
+catkin_make
+sudo mv -v $SOURCE_PATH/dependencies/* $DEPEND_PATH/src/
+catkin_make
+# Perform once again to confirm build
+catkin_make
+
+
+###########################################
+# Build Astronet
+###########################################
+mkdir -p $ASTRONET_PATH/src
+sudo mv -v $SOURCE_PATH/astronet/* $ASTRONET_PATH/src/
+cd $ASTRONET_PATH
+catkin_make
+
+
+###########################################
+# Clean/Remove Temp Directories
+###########################################
+rm -rf $SOURCE_PATH/astronet $SOURCE_PATH/dependencies
+
+
+###########################################
+# export paths and source from setup files
+###########################################
+echo 'export SOURCE_PATH=$HOME/Documents/Astrobee/Astrobee' >> ~/.bashrc
+echo 'export ANDROID_PATH="${SOURCE_PATH}_android"' >> ~/.bashrc
+echo 'export BUILD_PATH=$HOME/Documents/Astrobee/Astrobee_build' >> ~/.bashrc
+echo 'export INSTALL_PATH=$HOME/Documents/Astrobee/Astrobee_install' >> ~/.bashrc
+echo 'export ASTRONET_PATH=$HOME/Documents/Astrobee/Astronet' >> ~/.bashrc
+echo 'export DEPEND_PATH=$HOME/Documents/Astrobee/Dependencies' >> ~/.bashrc
+
+echo 'source $BUILD_PATH/devel/setup.bash' >> ~/.bashrc
+echo 'source $ASTRONET_PATH/devel/setup.bash' >> ~/.bashrc
+echo 'source $DEPEND_PATH/devel/setup.bash' >> ~/.bashrc
