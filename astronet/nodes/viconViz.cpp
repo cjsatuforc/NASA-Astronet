@@ -14,9 +14,10 @@ towards +y, the gazebo model moves towards +y.
 #include <gazebo_msgs/ModelState.h>
 #include <geometry_msgs/TransformStamped.h>
 
-#define scaleX 0.7
+#define scaleX 1
 #define scaleY 1
 #define scaleZ 1
+#define scaleAng 1
 #define shoulderHeight 1.75
 #define counterToStart 1000
 
@@ -37,10 +38,10 @@ Publisher pub_right;
 ServiceClient client;
 
 // declare initial values for the states of each model
-float head_x = -3.75, head_y = 0, head_z = 5.25;
-float torso_x = -3.75, torso_y = 0, torso_z = 4.75;
-float left_x = -3.73, left_y = 0.25, left_z = 5;
-float right_x = -3.73, right_y = -0.25, right_z = 5;
+float head_x = -0.75, head_y = 0, head_z = 5.25;
+float torso_x = -0.75, torso_y = 0, torso_z = 4.75;
+float left_x = -0.73, left_y = 0.25, left_z = 5;
+float right_x = -0.73, right_y = -0.25, right_z = 5;
 
 float origin_x, origin_y, origin_z;
 float origin_qx, origin_qy, origin_qz, origin_qw;
@@ -62,16 +63,17 @@ void publish_head(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float 
 		ROS_WARN("Starting to track Head Positions");
 	}
 	else {
+		// Normalize Quaternions
 		msg.pose.position.x = head_x + scaleX*(x-origin_x);
 		msg.pose.position.y = head_y + scaleY*(y-origin_y);
 		msg.pose.position.z = head_z + scaleZ*(z-origin_z);
-		msg.pose.orientation.x = 0;
-		msg.pose.orientation.y = 0;
-		msg.pose.orientation.z = 0;
-		msg.pose.orientation.w = 0;
-		pub_head.publish(msg);
+		msg.pose.orientation.x = scaleAng*(qx);
+		msg.pose.orientation.y = scaleAng*(qy);
+		msg.pose.orientation.z = scaleAng*(qz);
+		msg.pose.orientation.w = scaleAng*(qw);
 	}
 
+	pub_head.publish(msg);
 	ctr++;
 	
 }
@@ -118,6 +120,18 @@ void listener_head(const geometry_msgs::TransformStamped &msg) {
 	float qy = msg.transform.rotation.y;
 	float qz = msg.transform.rotation.z;
 	float qw = msg.transform.rotation.w;
+
+	// Round Decimals and Normalize
+	x = round( x * 1000.0 ) / 1000.0;
+	y = round( y * 1000.0 ) / 1000.0;
+	z = round( z * 1000.0 ) / 1000.0;
+	qx = round( qx * 100.0 ) / 100.0;
+	qy = round( qy * 100.0 ) / 100.0;
+	qz = round( qz * 100.0 ) / 100.0;
+	qw = round( qw * 100.0 ) / 100.0;
+	
+	float normQ = sqrt(qx*qx + qy*qy + qz*qz + qw*qw);
+	qx /= normQ ; qy /= normQ; qz /= normQ; qw /= normQ;
 
 	gazebo_msgs::ModelState head_msg;
 	gazebo_msgs::ModelState torso_msg;
