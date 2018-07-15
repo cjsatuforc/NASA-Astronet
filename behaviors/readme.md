@@ -1,2 +1,0 @@
-\defgroup beh Behaviors
-

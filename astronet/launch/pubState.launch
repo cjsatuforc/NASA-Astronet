@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-	<!-- Launch published state from the MATLAB -->
-	<node pkg="aerolab" type="hbirdbPub" name="hbirdbPub" respawn="true" output="screen" />
-	<node pkg="aerolab" type="hbirddgPub" name="hbirddgPub" respawn="true" output="screen" />
-</launch>
