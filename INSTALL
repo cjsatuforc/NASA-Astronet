@@ -2,24 +2,44 @@
 
 export BUILD_PATH=$HOME/Documents/Astronet/
 export INSTALL_PATH=$HOME/Documents/Astronet/src
+export MODEL_PATH=$HOME/.gazebo/models/
+
 mkdir -p $INSTALL_PATH
 
+# build gtest
+cd /usr/src/gtest/
+sudo cmake CMakeLists.txt
+sudo make
+sudo cp *.a /usr/lib
+
+# install autoconf/ autoreconf/ dh
+sudo apt-get -y install dh-autoreconf autoconf dh-autoconf 
+
+# install vicon bridge 
 pushd $INSTALL_PATH
 git clone https://github.com/ethz-asl/vicon_bridge.git
+git clone https://github.com/catkin/catkin_simple.git
 popd
 
-mv -v 'asctec_mav_framework' 'astrobee' 'astrobee_description' 'catkin_simple' 'ethzasl_msf' 'gazebo_ros_pkgs' 'glog_catkin' 'mav_comm' 'mav_msgs' 'planning_msgs' $INSTALL_PATH
+# install dependent packages
+mv -v 'glog_catkin' 'asctec_mav_framework' 'astrobee' 'astrobee_description' 'ethzasl_msf' 'gazebo_ros_pkgs' 'glog_catkin' 'mav_comm' 'mav_msgs' 'planning_msgs' $INSTALL_PATH
 pushd $BUILD_PATH
 catkin_make
 catkin_make
-catkin_make
 popd
 
+# install astrobee 
 mv -v ./aerolab $INSTALL_PATH
 pushd $BUILD_PATH
 catkin_make
 popd
 
+pushd $INSTALL_PATH/astrobee/media
+mkdir -p $MODEL_PATH
+mv -v iss $MODEL_PATH
+popd
+
+# add source to bashrc
 echo "source $HOME/Documents/Astronet/devel/setup.bash" >> ~/.bashrc
 
 echo "Installation Complete!"
