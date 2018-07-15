@@ -1,0 +1,25 @@
+#!/bin/bash
+
+export BUILD_PATH=$HOME/Documents/Astronet/
+export INSTALL_PATH=$HOME/Documents/Astronet/src
+mkdir -p $INSTALL_PATH
+
+pushd $INSTALL_PATH
+git clone https://github.com/ethz-asl/vicon_bridge.git
+popd
+
+mv -v ./{asctec_mav_framework, astrobee, astrobee_description, catkin_simple, ethzasl_msf, gazebo_ros_pkgs, glog_catkin, mav_comm, mav_msgs, planning_msgs} $INSTALL_PATH
+pushd $BUILD_PATH
+catkin_make
+catkin_make
+catkin_make
+popd
+
+mv -v ./aerolab $INSTALL_PATH
+pushd $BUILD_PATH
+catkin_make
+popd
+
+echo "source $HOME/Documents/Astronet/devel/setup.bash" >> ~/.bashrc
+
+echo "Installation Complete!"
