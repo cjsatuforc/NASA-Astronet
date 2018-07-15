@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>aerolab</name>
+  <version>0.0.1</version>
+  <description>Astronet Publisher</description>
+
+  <maintainer email="dhanjalsahib@gmail.com">Sahib Dhanjal</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>gazebo_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>asctec_hl_comm</depend>
+
+</package>

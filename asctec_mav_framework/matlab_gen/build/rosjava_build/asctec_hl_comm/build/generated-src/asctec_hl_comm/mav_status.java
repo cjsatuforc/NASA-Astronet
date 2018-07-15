@@ -1,0 +1,48 @@
+package asctec_hl_comm;
+
+public interface mav_status extends org.ros.internal.message.Message {
+  static final java.lang.String _TYPE = "asctec_hl_comm/mav_status";
+  static final java.lang.String _DEFINITION = "Header header\n\nfloat32     battery_voltage\nstring      flight_mode_ll\nstring      state_estimation\nstring      position_control\nbool        serial_interface_enabled\nbool        serial_interface_active\nfloat32     flight_time\nfloat32     cpu_load\n\nstring      motor_status\n\nstring      gps_status\nint32       gps_num_satellites \n\nint32       debug1\nint32       debug2\n\nbool        have_SSDK_parameters\n\nuint32      tx_packets\nuint32      tx_packets_good\nuint32      rx_packets\nuint32      rx_packets_good\n\nfloat32     timesync_offset";
+  static final boolean _IS_SERVICE = false;
+  static final boolean _IS_ACTION = false;
+  std_msgs.Header getHeader();
+  void setHeader(std_msgs.Header value);
+  float getBatteryVoltage();
+  void setBatteryVoltage(float value);
+  java.lang.String getFlightModeLl();
+  void setFlightModeLl(java.lang.String value);
+  java.lang.String getStateEstimation();
+  void setStateEstimation(java.lang.String value);
+  java.lang.String getPositionControl();
+  void setPositionControl(java.lang.String value);
+  boolean getSerialInterfaceEnabled();
+  void setSerialInterfaceEnabled(boolean value);
+  boolean getSerialInterfaceActive();
+  void setSerialInterfaceActive(boolean value);
+  float getFlightTime();
+  void setFlightTime(float value);
+  float getCpuLoad();
+  void setCpuLoad(float value);
+  java.lang.String getMotorStatus();
+  void setMotorStatus(java.lang.String value);
+  java.lang.String getGpsStatus();
+  void setGpsStatus(java.lang.String value);
+  int getGpsNumSatellites();
+  void setGpsNumSatellites(int value);
+  int getDebug1();
+  void setDebug1(int value);
+  int getDebug2();
+  void setDebug2(int value);
+  boolean getHaveSSDKParameters();
+  void setHaveSSDKParameters(boolean value);
+  int getTxPackets();
+  void setTxPackets(int value);
+  int getTxPacketsGood();
+  void setTxPacketsGood(int value);
+  int getRxPackets();
+  void setRxPackets(int value);
+  int getRxPacketsGood();
+  void setRxPacketsGood(int value);
+  float getTimesyncOffset();
+  void setTimesyncOffset(float value);
+}
