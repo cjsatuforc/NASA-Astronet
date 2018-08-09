@@ -32,7 +32,7 @@ tic
 vicon_sub(1) = rossubscriber(quad_list{1},'geometry_msgs/Transform',viconCallback_list{1});
 
 % subscribe to the head, left_arm, right_arm positions published by Vicon
-vicon_sub(2) = rossubscriber(quad_list{2},'geometry_msgs/TransformStamped',viconCallback_list{2}); 
+vicon_sub(2) = rossubscriber(quad_list{2},'geometry_msgs/TransformStamped',viconCallback_list{2});
 vicon_sub(3) = rossubscriber(quad_list{3},'geometry_msgs/TransformStamped',viconCallback_list{3});
 vicon_sub(4) = rossubscriber(quad_list{4},'geometry_msgs/TransformStamped',viconCallback_list{4});
 
@@ -83,7 +83,7 @@ z_orig = (z_min)/10;
 % to be subtracted from vicon data
 x_orig_ws = 0;
 y_orig_ws = 0;
-z_orig_ws = 0;
+z_orig_ws = 1.5;    % set the origin to the height of the operators shoulder
 
 % thresholds
 arm_thresh = 1.3;   % arm height threshold
@@ -144,9 +144,9 @@ update_count = 0;
 orient_tol = .01;
 Ep_star = .05;
 
- 
+
 %set up coordinates
-%NOminal are .5 and .1....Works well! 
+%NOminal are .5 and .1....Works well!
 dx = 1; dy = 1; dz = 1; droll = .05; dpitch = dx/Ri; dyaw = dx/Ri;
 %set(gcf,'visible','off')
 dt = 1;
@@ -179,7 +179,7 @@ yaw_i = zeros(1,length(time));
 
 
 eul = quat2eul([qw_1 qx_1 qy_1 qz_1]); % quat2eul : quaternion to euler angle conversion
-roll_i(1,t_count+1) = eul(3); 
+roll_i(1,t_count+1) = eul(3);
 pitch_i(1,t_count+1) =  eul(2);
 yaw_i(1,t_count+1) = eul(1);
 
@@ -188,12 +188,12 @@ x_i(1,t_count+1) = (x_1 - x_orig)*10;
 y_i(1,t_count+1) = (y_1 - y_orig)*10;
 z_i(1,t_count+1) = (z_1 - z_orig)*10;
 
- 
+
 %initialize as zero coverage
 Q = zeros(length(y_coord),length(x_coord),length(z_coord));
 Q_mod = Q;
 
- 
+
 %%%%New on 5/19/16
 coverror = zeros(1,length(time));
 coverror(1) = 1;
@@ -202,8 +202,8 @@ vi_save = zeros(1,length(time));
 wi_save = zeros(1,length(time));
 ri_save = zeros(1,length(time));
 si_save = zeros(1,length(time));
- 
- 
+
+
 ui = zeros(1,1);
 vi = zeros(1,1);
 wi = zeros(1,1);
@@ -214,7 +214,7 @@ S_i = zeros(length(y_coord),length(x_coord),length(z_coord));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %------------------------ MAIN COVERAGE LOOP -------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
+
 %%Main Loop
 while(1)
      %%%%%PUT COVERAGE CONTROL CODE HERE%%%%%
@@ -454,7 +454,7 @@ while(1)
 
     %Propagate Agent State
     eul = quat2eul([qw_1 qx_1 qy_1 qz_1]);
-    roll_i(1,t_count+1) = eul(3); 
+    roll_i(1,t_count+1) = eul(3);
     pitch_i(1,t_count+1) =  eul(2);
     yaw_i(1,t_count+1) = eul(1);
 
@@ -482,7 +482,7 @@ while(1)
     end
     if z_i(t_count+1)<min(z_coord)
         z_i(t_count+1) = min(z_coord);
-    end  
+    end
 
     ui(t_count) = K_u*ai1;
     vi(t_count) = K_v*ai2;
@@ -512,23 +512,23 @@ while(1)
     end
 
     if y_i(t_count+1)==max(y_coord)
-        bound_vy = Rot_Mat\[0;-U_max;0]; 
+        bound_vy = Rot_Mat\[0;-U_max;0];
         bound_flag = 1;
     end
     if y_i(t_count+1)==min(y_coord)
-        bound_vy = Rot_Mat\[0;U_max;0]; 
+        bound_vy = Rot_Mat\[0;U_max;0];
         bound_flag = 1;
     end
 
     if z_i(t_count+1)==max(z_coord)
-        bound_vz = Rot_Mat\[0;0;-U_max]; 
+        bound_vz = Rot_Mat\[0;0;-U_max];
         bound_flag = 1;
     end
     if z_i(t_count+1)==min(z_coord)
-        bound_vz = Rot_Mat\[0;0;U_max]; 
+        bound_vz = Rot_Mat\[0;0;U_max];
         bound_flag = 1;
     end
-   % if near boundary, send back         
+   % if near boundary, send back
    if bound_flag==1
        bound_vc = bound_vx+bound_vy+bound_vz;
        ui(t_count) = bound_vc(1);
@@ -540,12 +540,12 @@ while(1)
     %-------------------------- GESTURE CONTROL --------------------------%
     %---------------- Come to daddy and hover near my head ---------------%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    % Calculate distances to all the walls         
+
+    % Calculate distances to all the walls
     dist_x_min = abs(x_1 - x_min/10); dist_x_max = abs(x_1 - x_max/10);
     dist_y_min = abs(y_1 - y_min/10); dist_y_max = abs(y_1 - y_max/10);
     dist_z_min = abs(z_1 - z_min/10); dist_z_max = abs(z_1 - z_max/10);
-        
+
     if z_right>arm_thresh && z_left<arm_thresh
         disp("come here");
         % fprintf("Wall Distances: min - (%f,%f,%f) | max - (%f,%f,%f)\n", ...
@@ -570,14 +570,14 @@ while(1)
             v_x = vz_scale*heading_vec(1);
             v_y = vz_scale*heading_vec(2);
         end
-        
+
         Orient = quat2eul([qw_1 qx_1 qy_1 qz_1]);
         Rot_Mat = [cos(Orient(2))*cos(Orient(1)),(sin(Orient(3))*sin(Orient(2))*cos(Orient(1))-cos(Orient(3))*sin(Orient(1))),(cos(Orient(3))*sin(Orient(2))*cos(Orient(1))+sin(Orient(3))*sin(Orient(1))); ...
                  cos(Orient(2))*sin(Orient(1)),(sin(Orient(3))*sin(Orient(2))*sin(Orient(1))+cos(Orient(3))*cos(Orient(1))),(cos(Orient(3))*sin(Orient(2))*sin(Orient(1))-sin(Orient(3))*cos(Orient(1))); ...
                  -sin(Orient(2)),(sin(Orient(3))*cos(Orient(2))),(cos(Orient(3))*cos(Orient(2)))];
 
         Control_body = Rot_Mat\[v_x;v_y;v_z];
-        
+
         % add bias velocity if astrobee near the walls
         if dist_x_min<dist_thresh
             Control_body(1) = (exp(abs(dist_thresh-dist_x_min))-1);
@@ -587,7 +587,7 @@ while(1)
             Control_body(1) = -(exp(abs(dist_thresh-dist_x_max))-1);
             fprintf("max_x: %f, v: %f\n",dist_x_max, Control_body(1));
         end
-        
+
         if dist_y_min<dist_thresh
             Control_body(2) = (exp(abs(dist_thresh-dist_y_min))-1);
             fprintf("min_y: %f, v: %f\n",dist_y_min, Control_body(2));
@@ -596,7 +596,7 @@ while(1)
             Control_body(2) = -(exp(abs(dist_thresh-dist_y_max))-1);
             fprintf("max_y: %f, v: %f\n",dist_y_max, Control_body(2));
         end
-        
+
         if dist_z_min<dist_thresh
             Control_body(3) = (exp(abs(dist_thresh-dist_z_min))-1);
             fprintf("min_z: %f, v: %f\n",dist_z_min, Control_body(3));
@@ -605,7 +605,7 @@ while(1)
             Control_body(3) = -(exp(abs(dist_thresh-dist_z_max))-1);
             fprintf("max_z: %f, v: %f\n",dist_z_max, Control_body(3));
         end
-        
+
         ui(t_count) = Control_body(1);
         vi(t_count) = Control_body(2);
         wi(t_count) = Control_body(3);
@@ -619,11 +619,11 @@ while(1)
         disp("follow vector");
         % fprintf("Wall Distances: min - (%f,%f,%f) | max - (%f,%f,%f)\n", ...
         % dist_x_min, dist_y_min, dist_z_min, dist_x_max, dist_y_max, dist_z_max);
-    
+
         pos_rel_arm = [(x_1 - x_orig) - (x_right - x_orig_ws);...
                        (y_1 - y_orig) - (y_right - y_orig_ws);...
                        (z_1 - z_orig) - (z_right - z_orig_ws)];
-        
+
         Orient_right = quat2eul([qw_right qx_right qy_right qz_right]);
         Rot_Mat_right = [cos(Orient_right(2))*cos(Orient_right(1)),(sin(Orient_right(3))*sin(Orient_right(2))*cos(Orient_right(1))-cos(Orient_right(3))*sin(Orient_right(1))),(cos(Orient_right(3))*sin(Orient_right(2))*cos(Orient_right(1))+sin(Orient_right(3))*sin(Orient_right(1))); ...
          cos(Orient_right(2))*sin(Orient_right(1)),(sin(Orient_right(3))*sin(Orient_right(2))*sin(Orient_right(1))+cos(Orient_right(3))*cos(Orient_right(1))),(cos(Orient_right(3))*sin(Orient_right(2))*sin(Orient_right(1))-sin(Orient_right(3))*cos(Orient_right(1))); ...
@@ -639,9 +639,9 @@ while(1)
         Rot_Mat = [cos(Orient(2))*cos(Orient(1)),(sin(Orient(3))*sin(Orient(2))*cos(Orient(1))-cos(Orient(3))*sin(Orient(1))),(cos(Orient(3))*sin(Orient(2))*cos(Orient(1))+sin(Orient(3))*sin(Orient(1))); ...
          cos(Orient(2))*sin(Orient(1)),(sin(Orient(3))*sin(Orient(2))*sin(Orient(1))+cos(Orient(3))*cos(Orient(1))),(cos(Orient(3))*sin(Orient(2))*sin(Orient(1))-sin(Orient(3))*cos(Orient(1))); ...
          -sin(Orient(2)),(sin(Orient(3))*cos(Orient(2))),(cos(Orient(3))*cos(Orient(2)))];
-    
+
         Control_body = Rot_Mat\Back_to_room;
-        
+
         % add bias velocity if astrobee near the walls
         if dist_x_min<dist_thresh
             Control_body(1) = (exp(abs(dist_thresh-dist_x_min))-1);
@@ -651,7 +651,7 @@ while(1)
             Control_body(1) = -(exp(abs(dist_thresh-dist_x_max))-1);
             fprintf("max_x: %f, v: %f\n",dist_x_max, Control_body(1));
         end
-        
+
         if dist_y_min<dist_thresh
             Control_body(2) = (exp(abs(dist_thresh-dist_y_min))-1);
             fprintf("min_y: %f, v: %f\n",dist_y_min, Control_body(2));
@@ -660,7 +660,7 @@ while(1)
             Control_body(2) = -(exp(abs(dist_thresh-dist_y_max))-1);
             fprintf("max_y: %f, v: %f\n",dist_y_max, Control_body(2));
         end
-        
+
         if dist_z_min<dist_thresh
             Control_body(3) = (exp(abs(dist_thresh-dist_z_min))-1);
             fprintf("min_z: %f, v: %f\n",dist_z_min, Control_body(3));
@@ -680,16 +680,16 @@ while(1)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     ctrl_msg(1).Type = 2;
-    
+
     % publishing velocities
     ctrl_msg(1).X = vel_scale * ui(t_count);
     ctrl_msg(1).Y = vel_scale * vi(t_count);
     ctrl_msg(1).Z = vel_scale * wi(t_count);
-    
+
     % publishing pitch and yaw
     ctrl_msg(1).Yaw = ang_scale * si(t_count);
     ctrl_msg(1).VMaxZ = ang_scale * ri(t_count);
-    
+
     % add momentum if stuck in local minima
     if(abs(ctrl_msg(1).X)<v_thresh)
         ctrl_msg(1).X = v_bias;
@@ -700,9 +700,9 @@ while(1)
     if(abs(ctrl_msg(1).Z)<v_thresh)
         ctrl_msg(1).Z = v_bias;
     end
-    
-    
-    send(ctrl_pub(1),ctrl_msg(1));  
+
+
+    send(ctrl_pub(1),ctrl_msg(1));
     fprintf("Vel:(%f, %f, %f), Ang:(0, %f, %f)\n",ctrl_msg(1).X, ctrl_msg(1).Y, ctrl_msg(1).Z, ctrl_msg(1).VMaxZ, ctrl_msg(1).Yaw);
 
     %Propogate Coverage Level
@@ -752,7 +752,7 @@ while(1)
         axis equal;
     end
 
-    temp = max(0,c_star-Q(1:dyy:y_max-y_min+1,1:dxx:x_max-x_min+1,1:dzz:z_max-z_min+1));  
+    temp = max(0,c_star-Q(1:dyy:y_max-y_min+1,1:dxx:x_max-x_min+1,1:dzz:z_max-z_min+1));
     tempp = temp(:);
     refreshdata(h)
     coverror(t_count) = trapz(trapz(trapz(max(0,c_star-Q(:,:,:)).^3)))*dx*dy*dz;

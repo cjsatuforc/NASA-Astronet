@@ -1,11 +1,11 @@
 /*
-Node to visualize Vicon Messages by moving the 
-human model with respect to the motion capture 
+Node to visualize Vicon Messages by moving the
+human model with respect to the motion capture
 messages capturing wrist and head motions
 
 Coordinate Conventions:
-when you move towards +x in the workspace, the 
-gazebo model towards +x. When the model moves 
+when you move towards +x in the workspace, the
+gazebo model towards +x. When the model moves
 towards +y, the gazebo model moves towards +y.
 */
 
@@ -44,7 +44,6 @@ float left_x = -0.73, left_y = 0.25, left_z = 5;
 float right_x = -0.73, right_y = -0.25, right_z = 5;
 
 float origin_x, origin_y, origin_z;
-float origin_qx, origin_qy, origin_qz, origin_qw;
 
 int ctr = 0;
 
@@ -54,10 +53,6 @@ void publish_head(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float 
 		origin_x = x;
 		origin_y = y;
 		origin_z = z;
-		origin_qx = qx;
-		origin_qy = qy;
-		origin_qz = qz;
-		origin_qw = qw;
 	}
 	else if(ctr==counterToStart) {
 		ROS_WARN("Starting to track Head Positions");
@@ -75,7 +70,7 @@ void publish_head(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float 
 
 	pub_head.publish(msg);
 	ctr++;
-	
+
 }
 
 void publish_torso(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float z=0.0) {
@@ -129,7 +124,7 @@ void listener_head(const geometry_msgs::TransformStamped &msg) {
 	qy = round( qy * 100.0 ) / 100.0;
 	qz = round( qz * 100.0 ) / 100.0;
 	qw = round( qw * 100.0 ) / 100.0;
-	
+
 	float normQ = sqrt(qx*qx + qy*qy + qz*qz + qw*qw);
 	qx /= normQ ; qy /= normQ; qz /= normQ; qw /= normQ;
 
@@ -137,7 +132,7 @@ void listener_head(const geometry_msgs::TransformStamped &msg) {
 	gazebo_msgs::ModelState torso_msg;
 	head_msg.model_name = "head";
 	torso_msg.model_name = "torso";
-	
+
 	publish_head(head_msg, x, y, z, qx, qy, qz, qw);
 	publish_torso(torso_msg, x, y, z);
 }
