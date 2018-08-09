@@ -83,7 +83,7 @@ z_orig = (z_min)/10;
 % to be subtracted from vicon data
 x_orig_ws = 0;
 y_orig_ws = 0;
-z_orig_ws = 0;
+z_orig_ws = 1.5; % set to operator shoulder height
 
 % thresholds
 arm_thresh = 1.3;   % arm height threshold
