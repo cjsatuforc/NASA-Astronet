@@ -44,7 +44,6 @@ float left_x = -0.73, left_y = 0.25, left_z = 5;
 float right_x = -0.73, right_y = -0.25, right_z = 5;
 
 float origin_x, origin_y, origin_z;
-float origin_qx, origin_qy, origin_qz, origin_qw;
 
 int ctr = 0;
 
@@ -54,10 +53,6 @@ void publish_head(gazebo_msgs::ModelState &msg, float x=0.0, float y=0.0, float 
 		origin_x = x;
 		origin_y = y;
 		origin_z = z;
-		origin_qx = qx;
-		origin_qy = qy;
-		origin_qz = qz;
-		origin_qw = qw;
 	}
 	else if(ctr==counterToStart) {
 		ROS_WARN("Starting to track Head Positions");
