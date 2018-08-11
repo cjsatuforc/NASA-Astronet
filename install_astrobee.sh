@@ -63,7 +63,7 @@ catkin_make
 # Build Astronet
 ###########################################
 mkdir -p $ASTRONET_PATH/src
-sudo mv -v $SOURCE_PATH/astronet/* $ASTRONET_PATH/src/
+sudo mv -v $SOURCE_PATH/aerolab/* $ASTRONET_PATH/src/
 cd $ASTRONET_PATH
 catkin_make
 
@@ -71,7 +71,7 @@ catkin_make
 ###########################################
 # Clean/Remove Temp Directories
 ###########################################
-rm -rf $SOURCE_PATH/astronet $SOURCE_PATH/dependencies
+rm -rf $SOURCE_PATH/aerolab $SOURCE_PATH/dependencies
 
 
 ###########################################
